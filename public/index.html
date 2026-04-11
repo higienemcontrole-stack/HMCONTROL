@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Portal de Auditoria</title>
+    <link rel="stylesheet" href="/src/styles/design-system.css?v=5.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Fallback de Segurança - Navbar */
+        .navbar-superior {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: #4472C4 !important; /* Azul Master Excel mais claro */
+            color: white !important;
+            padding: 0 40px !important;
+            height: 60px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 9999 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+            width: 100% !important;
+        }
+        .nav-brand { font-weight: 800 !important; font-size: 18px !important; color: white !important; }
+        .nav-links { 
+            display: flex !important; 
+            flex-direction: row !important;
+            gap: 25px !important; 
+            margin: 0 auto !important;
+        }
+        .nav-link { 
+            color: rgba(255,255,255,0.9) !important; 
+            text-decoration: none !important; 
+            font-weight: 600 !important; 
+            font-size: 12px !important; 
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .nav-link.active { border-bottom: 3px solid white !important; color: white !important; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header class="navbar-superior">
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="/index.html" class="nav-link active"><i class="fas fa-home"></i> HOME</a>
+            <a href="/dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="/registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="/tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="/dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="/validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="/configuracoes.html#sistema"><i class="fas fa-server"></i> Sistema</a>
+                    <a href="/configuracoes.html#usuarios"><i class="fas fa-users-cog"></i> Usuários</a>
+                    <a href="/configuracoes.html#logs"><i class="fas fa-clipboard-list"></i> Logs</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()">
+                    <i class="fas fa-user-cog"></i> Meu Perfil
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modal de Perfil (Popup) -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-user-edit"></i> Configurações de Perfil
+                </div>
+                <button class="btn-close-modal" onclick="HM.closeProfileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="profile-field-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="profile-name" class="profile-input" placeholder="Seu nome">
+                </div>
+                
+                <div class="profile-field-group">
+                    <label>E-mail (Login)</label>
+                    <input type="email" id="profile-email" class="profile-input" disabled>
+                </div>
+
+                <div class="profile-field-group">
+                    <label>Nova Senha (opcional)</label>
+                    <input type="password" id="profile-password" class="profile-input" placeholder="Mudar senha">
+                </div>
+
+                <div class="profile-field-group">
+                    <label>Cargo / Perfil</label>
+                    <select id="profile-role" class="profile-input">
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">Telas com Acesso</div>
+                    <div class="access-list" id="profile-screens">
+                        <label class="access-item"><input type="checkbox" value="dashboard" checked disabled> Dashboard</label>
+                        <label class="access-item"><input type="checkbox" value="registro"> Registro</label>
+                        <label class="access-item"><input type="checkbox" value="tabulacao"> Tabulação</label>
+                        <label class="access-item"><input type="checkbox" value="dinamica"> Dinâmica</label>
+                        <label class="access-item"><input type="checkbox" value="validacoes"> Validações</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="HM.closeProfileModal()">Cancelar</button>
+                <button class="btn-modal-save" onclick="HM.saveProfileData()" id="btn-save-profile">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content" style="padding: 40px;">
+        <!-- Header simplificado -->
+        <div style="margin-bottom: 40px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+            <h1 class="text-title" style="border-bottom: 4px solid var(--primary); padding-bottom: 10px; margin-bottom: 10px; display: inline-block;">Bem-vindo ao Portal de Auditoria</h1>
+            <p class="text-subtitle">Sistema Gestor de Monitoramento de Higiene de Mãos</p>
+        </div>
+
+        <!-- Grade de 6 botões (Módulos principais) -->
+        <section class="modules-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 120px;">
+            <a href="dashboard.html" class="card-premium module-card" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-chart-line fa-2x" style="color: var(--primary); margin-bottom: 15px;"></i>
+                <h3 class="text-title" style="font-size: 18px;">DASHBOARD — GERAL</h3>
+                <p class="text-subtitle">Métricas e indicadores hospitalares</p>
+            </a>
+            <a href="registro.html" class="card-premium module-card" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-plus-circle fa-2x" style="color: var(--success); margin-bottom: 15px;"></i>
+                <h3 class="text-title" style="font-size: 18px;">REGISTRO</h3>
+                <p class="text-subtitle">Nova auditoria de higiene de mãos</p>
+            </a>
+            <a href="tabulacao.html" class="card-premium module-card" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-table fa-2x" style="color: var(--info); margin-bottom: 15px;"></i>
+                <h3 class="text-title" style="font-size: 18px;">TABULAÇÃO — GERAL</h3>
+                <p class="text-subtitle">Exploração da base de dados histórica</p>
+            </a>
+            <a href="dinamica.html" class="card-premium module-card" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-sync-alt fa-2x" style="color: var(--warning); margin-bottom: 15px;"></i>
+                <h3 class="text-title" style="font-size: 18px;">TABELA DINÂMICA GERAL</h3>
+                <p class="text-subtitle">Análise cruzada e pivot tables</p>
+            </a>
+            <a href="validacoes.html" class="card-premium module-card" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-check-double fa-2x" style="color: #8b5cf6; margin-bottom: 15px;"></i>
+                <h3 class="text-title" style="font-size: 18px;">VALIDAÇÕES</h3>
+                <p class="text-subtitle">Gestão de listas e parâmetros</p>
+            </a>
+            <a href="configuracoes.html" class="card-premium module-card" style="text-decoration: none; color: inherit;">
+                <i class="fas fa-cogs fa-2x" style="color: #64748b; margin-bottom: 15px;"></i>
+                <h3 class="text-title" style="font-size: 18px;">CONFIGURAÇÕES</h3>
+                <p class="text-subtitle">Sistema, usuários e logs</p>
+            </a>
+        </section>
+    </main>
+</div>
+
+<script src="/src/js/services/apiService.js?v=5.2"></script>
+<script src="/src/js/core.js?v=5.2"></script>
+</body>
+</html>

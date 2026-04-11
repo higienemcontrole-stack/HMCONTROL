@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Acesso Restrito</title>
+    <link rel="stylesheet" href="src/styles/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+
+        /* Fundo Animado Full-Screen */
+        .login-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('src/assets/bg_login.jpg') no-repeat center center;
+            background-size: cover;
+            z-index: -1;
+            animation: slowZoom 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes slowZoom {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 20px;
+        }
+
+        /* Form com Glassmorphism */
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+            border-radius: 15px;
+        }
+
+        .login-logo {
+            width: 120px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 14px;
+        }
+
+        .input-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: border-color 0.3s;
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-bg"></div>
+
+    <div class="login-container">
+        <div class="glass-panel login-card">
+            <img src="src/assets/logo.png" alt="HM CONTROL" class="login-logo" onerror="this.onerror=null; this.src='https://placehold.co/120x40/2563eb/ffffff?text=HM+CONTROL'">
+            <h2 class="text-title" style="margin-bottom: 10px;">Bem-vindo</h2>
+            <p class="text-subtitle" style="margin-bottom: 30px;">Acesse o portal de monitoramento</p>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">E-mail Profissional</label>
+                    <input type="email" id="email" class="input-control" placeholder="usuario@hospital.com.br" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="input-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-login" id="login-btn">
+                    <span id="btn-text">Entrar no Sistema</span>
+                </button>
+            </form>
+            
+            <div id="error-message" class="text-subtitle" style="margin-top: 20px; color: var(--danger); display: none;">
+                Credenciais inválidas. Tente novamente.
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/core.js?v=5.2"></script>
+</body>
+</html>

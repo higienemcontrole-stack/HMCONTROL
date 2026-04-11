@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Validações e Parâmetros</title>
+    <link rel="stylesheet" href="/src/styles/design-system.css?v=5.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Fallback de Segurança - Navbar */
+        .navbar-superior {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: #4472C4 !important; /* Azul Master Excel mais claro */
+            color: white !important;
+            padding: 0 40px !important;
+            height: 60px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 9999 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+            width: 100% !important;
+        }
+        .nav-brand { font-weight: 800 !important; font-size: 18px !important; color: white !important; }
+        .nav-links { 
+            display: flex !important; 
+            flex-direction: row !important;
+            gap: 25px !important; 
+            margin: 0 auto !important;
+        }
+        .nav-link { 
+            color: rgba(255,255,255,0.9) !important; 
+            text-decoration: none !important; 
+            font-weight: 600 !important; 
+            font-size: 12px !important; 
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .nav-link.active { border-bottom: 3px solid white !important; color: white !important; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header class="navbar-superior">
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="/index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="/dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="/registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="/tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="/dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="/validacoes.html" class="nav-link active"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="/configuracoes.html#sistema"><i class="fas fa-server"></i> Sistema</a>
+                    <a href="/configuracoes.html#usuarios"><i class="fas fa-users-cog"></i> Usuários</a>
+                    <a href="/configuracoes.html#logs"><i class="fas fa-clipboard-list"></i> Logs</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()">
+                    <i class="fas fa-user-cog"></i> Meu Perfil
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modal de Perfil (Popup) -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-user-edit"></i> Configurações de Perfil
+                </div>
+                <button class="btn-close-modal" onclick="HM.closeProfileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="profile-field-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="profile-name" class="profile-input" placeholder="Seu nome">
+                </div>
+                
+                <div class="profile-field-group">
+                    <label>E-mail (Login)</label>
+                    <input type="email" id="profile-email" class="profile-input" disabled>
+                </div>
+
+                <div class="profile-field-group">
+                    <label>Nova Senha (opcional)</label>
+                    <input type="password" id="profile-password" class="profile-input" placeholder="Mudar senha">
+                </div>
+
+                <div class="profile-field-group">
+                    <label>Cargo / Perfil</label>
+                    <select id="profile-role" class="profile-input">
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">Telas com Acesso</div>
+                    <div class="access-list" id="profile-screens">
+                        <label class="access-item"><input type="checkbox" value="dashboard" checked disabled> Dashboard</label>
+                        <label class="access-item"><input type="checkbox" value="registro"> Registro</label>
+                        <label class="access-item"><input type="checkbox" value="tabulacao"> Tabulação</label>
+                        <label class="access-item"><input type="checkbox" value="dinamica"> Dinâmica</label>
+                        <label class="access-item"><input type="checkbox" value="validacoes"> Validações</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="HM.closeProfileModal()">Cancelar</button>
+                <button class="btn-modal-save" onclick="HM.saveProfileData()" id="btn-save-profile">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content" style="padding: 40px; background: #F8FAFC;">
+        <header style="margin-bottom: 40px; text-align: center;">
+            <h1 class="text-title" style="color: var(--excel-blue); font-weight: 800;">VALIDAÇÕES E PARÂMETROS</h1>
+            <p class="text-subtitle">Gerenciamento centralizado de listas e parâmetros para auditoria HM</p>
+        </header>
+
+        <div class="validation-grid">
+            <!-- Coluna 1: Unidades -->
+            <div class="card-premium card-validation">
+                <h3 class="form-section-header" style="margin-top: 0; color: #1E3A8A; border-bottom-color: #BDD7EE;">
+                    <i class="fas fa-hospital-alt"></i> UNIDADES HOSPITALARES
+                </h3>
+                <div id="list-unidades" class="data-pills-container">
+                    <!-- Injetado via JS como data-pill -->
+                </div>
+                <i class="fas fa-city bg-icon-watermark"></i>
+            </div>
+
+            <!-- Coluna 2: Momentos -->
+            <div class="card-premium card-validation">
+                <h3 class="form-section-header" style="margin-top: 0; color: #1E3A8A; border-bottom-color: #BDD7EE;">
+                    <i class="fas fa-clock"></i> MOMENTOS AUDITADOS
+                </h3>
+                <div id="list-momentos" class="data-pills-container">
+                    <!-- Injetado via JS como data-pill -->
+                </div>
+                <i class="fas fa-history bg-icon-watermark"></i>
+            </div>
+
+            <!-- Coluna 3: Produtos -->
+            <div class="card-premium card-validation">
+                <h3 class="form-section-header" style="margin-top: 0; color: #1E3A8A; border-bottom-color: #BDD7EE;">
+                    <i class="fas fa-flask"></i> PRODUTOS UTILIZADOS
+                </h3>
+                <div id="list-produtos" class="data-pills-container">
+                    <!-- Injetado via JS como data-pill -->
+                </div>
+                <i class="fas fa-vial bg-icon-watermark"></i>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="/src/js/core.js?v=5.1"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            const res = await fetch('/api/excel/validations');
+            const data = await res.json();
+            
+            const renderBadges = (id, list) => {
+                const el = document.getElementById(id);
+                if (!el || !list) return;
+
+                // Pegar os primeiros 15 itens para não saturar visualmente
+                list.slice(0, 15).forEach(item => {
+                    const badge = document.createElement('span');
+                    badge.className = 'data-pill';
+                    badge.innerHTML = `<i class="fas fa-check"></i> ${item}`;
+                    el.appendChild(badge);
+                });
+                
+                if(list.length > 15) {
+                    const more = document.createElement('span');
+                    more.className = 'data-pill';
+                    more.style.background = '#E2E8F0';
+                    more.style.border = '1px dashed #94A3B8';
+                    more.innerHTML = `+ ${list.length - 15} itens...`;
+                    el.appendChild(more);
+                }
+            };
+
+            renderBadges('list-unidades', data.unidades);
+            renderBadges('list-momentos', data.momentos);
+            renderBadges('list-produtos', data.insumos);
+
+        } catch (err) {
+            console.error('Erro ao carregar validações:', err);
+        }
+    });
+</script>
+</body>
+</html>

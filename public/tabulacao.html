@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Tabulação Geral</title>
+    <link rel="stylesheet" href="/src/styles/design-system.css?v=5.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Fallback de Segurança - Navbar */
+        .navbar-superior {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: #4472C4 !important; /* Azul Master Excel mais claro */
+            color: white !important;
+            padding: 0 40px !important;
+            height: 60px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 9999 !important;
+            width: 100% !important;
+        }
+        .nav-links { display: flex !important; gap: 25px !important; }
+        .nav-link { color: white !important; text-decoration: none !important; font-weight: 600 !important; font-size: 12px !important; }
+        .nav-link.active { border-bottom: 3px solid white !important; }
+
+        /* Estilo Excel Twin */
+        .tabulacao-container {
+            padding: 20px;
+            background: #f4f7f9;
+            min-height: calc(100vh - 60px);
+        }
+
+        .filter-bar {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .filter-group { display: flex; align-items: center; gap: 10px; }
+        .filter-group label { font-size: 12px; font-weight: 700; color: #444; }
+        .filter-select { 
+            padding: 5px 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 3px; 
+            font-size: 12px; 
+            min-width: 120px;
+        }
+
+        .excel-table-wrapper {
+            background: white;
+            border: 1px solid #ACB9CA;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            max-width: 100%;
+            overflow-x: hidden; /* Garantia de NO HORIZONTAL SCROLL */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto; /* Permite ajuste automático para caber */
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        thead th {
+            background: #404040; /* Cinza Escuro Excel Header */
+            color: white;
+            padding: 8px 10px;
+            border: 1px solid #777;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        thead th:hover { background: #555; }
+        thead th i { margin-left: 5px; opacity: 0.7; font-size: 10px; }
+
+        tbody td {
+            padding: 6px 10px;
+            border: 1px solid #ACB9CA;
+            color: #333;
+            word-wrap: break-word; /* Forçar quebra de texto */
+            max-width: 200px; /* Limite para colunas longas */
+        }
+
+        tbody tr:nth-child(even) { background: #F8F9FB; }
+        tbody tr:hover { background: #E2EFDA; } /* Cor de hover suave do Excel */
+
+        /* Estilo para colunas específicas para otimizar espaço */
+        .col-mes, .col-ano { width: 60px; text-align: center; }
+        .col-horario { width: 80px; text-align: center; }
+
+        /* BUSCA CENTRAL */
+        .search-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .search-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 14px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 15px 8px 35px;
+            border: 1px solid #ACB9CA;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+            background: #fdfdfd;
+        }
+        .search-input:focus {
+            border-color: #4472C4;
+            box-shadow: 0 0 8px rgba(68, 114, 196, 0.2);
+            background: #fff;
+        }
+
+        /* Botão Novo Registro */
+        .btn-add-record {
+            background: #70AD47; /* Verde Excel */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-add-record:hover {
+            background: #548235;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header class="navbar-superior">
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="/index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="/dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="/registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="/tabulacao.html" class="nav-link active"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="/dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="/validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="/configuracoes.html#sistema"><i class="fas fa-server"></i> Sistema</a>
+                    <a href="/configuracoes.html#usuarios"><i class="fas fa-users-cog"></i> Usuários</a>
+                    <a href="/configuracoes.html#logs"><i class="fas fa-clipboard-list"></i> Logs</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()">
+                    <i class="fas fa-user-cog"></i> Meu Perfil
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modal de Perfil (Popup) -->
+    <div class="modal-overlay" id="profile-modal">
+        <!-- ... (código existente) ... -->
+    </div>
+
+    <!-- Modal Novo Registro (Fidelity Form) -->
+    <div class="modal-overlay" id="add-record-modal">
+        <div class="modal-card" style="max-width: 500px;">
+            <div class="modal-header" style="background: #70AD47;">
+                <div class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Novo Registro Manual
+                </div>
+                <button class="btn-close-modal" onclick="closeAddRecordModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="add-record-form" onsubmit="handleSaveRecord(event)">
+                <div class="modal-body">
+                    <div class="profile-field-group">
+                        <label>Observador (Manual)</label>
+                        <input type="text" id="add-observador" class="profile-input" required placeholder="Digite o nome do observador">
+                    </div>
+                    
+                    <div class="profile-field-group">
+                        <label>Unidade</label>
+                        <select id="add-unidade" class="profile-input" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="profile-field-group">
+                        <label>Profissional Auditado</label>
+                        <select id="add-profissional" class="profile-input" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="profile-field-group">
+                        <label>Momento Auditado</label>
+                        <select id="add-momento" class="profile-input" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="profile-field-group">
+                        <label>Produto Utilizado</label>
+                        <select id="add-produto" class="profile-input" required>
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+
+                    <div class="profile-field-group">
+                        <label>Data da Auditoria</label>
+                        <input type="date" id="add-data" class="profile-input" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeAddRecordModal()">Cancelar</button>
+                    <button type="submit" class="btn-modal-save" style="background: #70AD47;" id="btn-save-record">Cadastrar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="tabulacao-container">
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Filtrar por Ano:</label>
+                <select id="filter-year" class="filter-select">
+                    <option value="todos" selected>TODOS</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+            </div>
+
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" class="search-input" placeholder="Buscar em qualquer coluna (Unidade, Profissional, Observador...)">
+                </div>
+            </div>
+
+            <button class="btn-add-record" onclick="openAddRecordModal()">
+                <i class="fas fa-plus"></i> NOVO REGISTRO
+            </button>
+
+            <div class="filter-group" style="margin-left: 15px;">
+                <span id="record-count" style="font-size: 11px; color: #666;">Carregando registros...</span>
+            </div>
+        </div>
+
+        <div class="excel-table-wrapper">
+            <table id="main-table">
+                <thead>
+                    <tr id="table-headers">
+                        <th onclick="sortTable(0)">Mês (automático) <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(1)">Ano (automático) <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(2)">Observador <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(3)">Unidade <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(4)">Profissional Auditado <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(5)">Momento Auditado <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(6)">Produto utilizado <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(7)">Login <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(8)">Horário <i class="fas fa-sort"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Injetado via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let rawData = [];
+    let currentSort = { col: -1, asc: true };
+
+    const mesesOrdem = {
+        "jan": 1, "fev": 2, "mar": 3, "abr": 4, "mai": 5, "jun": 6,
+        "jul": 7, "ago": 8, "set": 9, "out": 10, "nov": 11, "dez": 12
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadData();
+        
+        document.getElementById('filter-year').addEventListener('change', () => {
+            renderTable();
+        });
+
+        document.getElementById('search-input').addEventListener('input', () => {
+            renderTable();
+        });
+
+        // Inicializar Data de Hoje no Modal
+        document.getElementById('add-data').value = new Date().toISOString().split('T')[0];
+    });
+
+    // --- LÓGICA DO MODAL DE REGISTRO ---
+    async function openAddRecordModal() {
+        document.getElementById('add-record-modal').classList.add('active');
+        
+        // Carregar Validações se ainda não carregadas
+        try {
+            const res = await fetch('/api/excel/validations');
+            const validations = await res.json();
+            
+            populateSelect('add-unidade', validations.unidades);
+            populateSelect('add-profissional', validations.profissionais);
+            populateSelect('add-momento', validations.momentos);
+            populateSelect('add-produto', validations.produtos);
+            
+            // Sugestão de Observador baseada no usuário logado (mas editável)
+            const userName = document.getElementById('display-user-name').textContent;
+            if (userName && userName !== 'Usuário') {
+                document.getElementById('add-observador').value = userName;
+            }
+        } catch (e) {
+            console.error("Erro ao carregar validações:", e);
+        }
+    }
+
+    function closeAddRecordModal() {
+        document.getElementById('add-record-modal').classList.remove('active');
+        document.getElementById('add-record-form').reset();
+    }
+
+    function populateSelect(id, list) {
+        const select = document.getElementById(id);
+        const currentVal = select.value;
+        select.innerHTML = '<option value="">Selecione...</option>';
+        list.sort().forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            select.appendChild(opt);
+        });
+        select.value = currentVal;
+    }
+
+    async function handleSaveRecord(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-record');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
+        const data = {
+            observador: document.getElementById('add-observador').value,
+            unidade: document.getElementById('add-unidade').value,
+            profissional_auditado: document.getElementById('add-profissional').value,
+            momento_auditado: document.getElementById('add-momento').value,
+            produto_utilizado: document.getElementById('add-produto').value,
+            data_auditoria: document.getElementById('add-data').value,
+            usuario_login: localStorage.getItem('hm_user_email') || 'manual'
+        };
+
+        try {
+            const res = await fetch('/api/registros', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert('Registro cadastrado com sucesso!');
+                closeAddRecordModal();
+                await loadData(); // Recarregar tabela
+            } else {
+                const err = await res.json();
+                alert('Erro ao salvar: ' + (err.detail || 'Erro desconhecido'));
+            }
+        } catch (err) {
+            alert('Erro de conexão: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Cadastrar Registro';
+        }
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch('/api/excel/tabulation?cacheBust=' + new Date().getTime());
+            rawData = await res.json();
+            
+            // Popular Filtro de Ano Dinamicamente
+            const years = [...new Set(rawData.map(r => String(r["Ano (automático)"])).filter(y => y.trim()))].sort();
+            const yearSelect = document.getElementById('filter-year');
+            yearSelect.innerHTML = '<option value="todos" selected>TODOS</option>';
+            years.forEach(year => {
+                const opt = document.createElement('option');
+                opt.value = year;
+                opt.textContent = year;
+                yearSelect.appendChild(opt);
+            });
+
+            // Ordenação Inicial: Ano Crescente, depois Mês Crescente
+            rawData.sort((a, b) => {
+                const anoA = parseInt(a["Ano (automático)"]) || 0;
+                const anoB = parseInt(b["Ano (automático)"]) || 0;
+                if (anoA !== anoB) return anoA - anoB;
+                
+                const mesA = mesesOrdem[String(a["Mês (automático)"]).toLowerCase()] || 0;
+                const mesB = mesesOrdem[String(b["Mês (automático)"]).toLowerCase()] || 0;
+                return mesA - mesB;
+            });
+
+            renderTable();
+        } catch (e) {
+            console.error("Erro ao carregar dados:", e);
+        }
+    }
+
+    function renderTable() {
+        const yearFilter = document.getElementById('filter-year').value;
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const body = document.getElementById('table-body');
+        body.innerHTML = '';
+
+        const filtered = rawData.filter(row => {
+            // 1. Filtro de Ano
+            const matchesYear = yearFilter === 'todos' || String(row["Ano (automático)"]) === yearFilter;
+            if (!matchesYear) return false;
+
+            // 2. Filtro de Busca Global
+            if (!searchTerm) return true;
+            
+            // Verifica se o termo existe em qualquer valor das colunas do objeto row
+            return Object.values(row).some(val => 
+                String(val).toLowerCase().includes(searchTerm)
+            );
+        });
+
+        const rowsHTML = filtered.map(row => `
+            <tr>
+                <td class="col-mes">${row["Mês (automático)"] || ''}</td>
+                <td class="col-ano">${row["Ano (automático)"] || ''}</td>
+                <td>${row["Observador"] || ''}</td>
+                <td>${row["Unidade"] || ''}</td>
+                <td>${row["Profissional Auditado"] || ''}</td>
+                <td>${row["Momento Auditado"] || ''}</td>
+                <td>${row["Produto utilizado"] || ''}</td>
+                <td>${row["Login"] || ''}</td>
+                <td class="col-horario">${row["Horário"] || ''}</td>
+            </tr>
+        `).join('');
+        
+        body.innerHTML = rowsHTML;
+        document.getElementById('record-count').textContent = `${filtered.length} registros encontrados`;
+    }
+
+    function sortTable(n) {
+        const keys = [
+            "Mês (automático)", "Ano (automático)", "Observador", "Unidade", 
+            "Profissional Auditado", "Momento Auditado", "Produto utilizado", 
+            "Login", "Horário"
+        ];
+        const key = keys[n];
+
+        if (currentSort.col === n) {
+            currentSort.asc = !currentSort.asc;
+        } else {
+            currentSort.col = n;
+            currentSort.asc = true;
+        }
+
+        rawData.sort((a, b) => {
+            let valA = a[key] || '';
+            let valB = b[key] || '';
+
+            // Lógica Especial para Mês
+            if (key === "Mês (automático)") {
+                valA = mesesOrdem[String(valA).toLowerCase()] || 0;
+                valB = mesesOrdem[String(valB).toLowerCase()] || 0;
+            } 
+            // Lógica Especial para Ano (numérica)
+            else if (key === "Ano (automático)") {
+                valA = parseInt(valA) || 0;
+                valB = parseInt(valB) || 0;
+            }
+            else {
+                valA = String(valA).toLowerCase();
+                valB = String(valB).toLowerCase();
+            }
+            
+            if (valA < valB) return currentSort.asc ? -1 : 1;
+            if (valA > valB) return currentSort.asc ? 1 : -1;
+            return 0;
+        });
+
+        updateSortIcons(n);
+        renderTable();
+    }
+
+    function updateSortIcons(activeIndex) {
+        const headers = document.querySelectorAll('#table-headers th i');
+        headers.forEach((icon, idx) => {
+            if (idx === activeIndex) {
+                icon.className = currentSort.asc ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                icon.style.opacity = "1";
+            } else {
+                icon.className = 'fas fa-sort';
+                icon.style.opacity = "0.3";
+            }
+        });
+    }
+</script>
+<script src="/src/js/core.js?v=5.1"></script>
+</body>
+</html>

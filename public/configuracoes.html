@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Configurações e Administração</title>
+    <link rel="stylesheet" href="/src/styles/design-system.css?v=5.1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Fallback de Segurança - Navbar */
+        .navbar-superior {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: #4472C4 !important; /* Azul Master Excel mais claro */
+            color: white !important;
+            padding: 0 40px !important;
+            height: 60px !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 9999 !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+            width: 100% !important;
+        }
+        .nav-brand { font-weight: 800 !important; font-size: 18px !important; color: white !important; }
+        .nav-links { 
+            display: flex !important; 
+            flex-direction: row !important;
+            gap: 25px !important; 
+            margin: 0 auto !important;
+        }
+        .nav-link { 
+            color: rgba(255,255,255,0.9) !important; 
+            text-decoration: none !important; 
+            font-weight: 600 !important; 
+            font-size: 12px !important; 
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .nav-link.active { border-bottom: 3px solid white !important; color: white !important; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header class="navbar-superior">
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="/index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="/dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="/registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="/tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="/dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="/validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="/configuracoes.html#sistema"><i class="fas fa-server"></i> Sistema</a>
+                    <a href="/configuracoes.html#usuarios"><i class="fas fa-users-cog"></i> Usuários</a>
+                    <a href="/configuracoes.html#logs"><i class="fas fa-clipboard-list"></i> Logs</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()">
+                    <i class="fas fa-user-cog"></i> Meu Perfil
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color: var(--danger);">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modal de Perfil (Popup) -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-user-edit"></i> Configurações de Perfil
+                </div>
+                <button class="btn-close-modal" onclick="HM.closeProfileModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="profile-field-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="profile-name" class="profile-input" placeholder="Seu nome">
+                </div>
+                
+                <div class="profile-field-group">
+                    <label>E-mail (Login)</label>
+                    <input type="email" id="profile-email" class="profile-input" disabled>
+                </div>
+
+                <div class="profile-field-group">
+                    <label>Nova Senha (opcional)</label>
+                    <input type="password" id="profile-password" class="profile-input" placeholder="Mudar senha">
+                </div>
+
+                <div class="profile-field-group">
+                    <label>Cargo / Perfil</label>
+                    <select id="profile-role" class="profile-input">
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">Telas com Acesso</div>
+                    <div class="access-list" id="profile-screens">
+                        <label class="access-item"><input type="checkbox" value="dashboard" checked disabled> Dashboard</label>
+                        <label class="access-item"><input type="checkbox" value="registro"> Registro</label>
+                        <label class="access-item"><input type="checkbox" value="tabulacao"> Tabulação</label>
+                        <label class="access-item"><input type="checkbox" value="dinamica"> Dinâmica</label>
+                        <label class="access-item"><input type="checkbox" value="validacoes"> Validações</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="HM.closeProfileModal()">Cancelar</button>
+                <button class="btn-modal-save" onclick="HM.saveProfileData()" id="btn-save-profile">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cadastro de Novo Usuário -->
+    <div class="modal-overlay" id="new-user-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fas fa-user-plus"></i> Novo Membro da Equipe</div>
+                <button class="btn-close-modal" onclick="UI.closeNewUserModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-field-group" style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px;">NOME COMPLETO</label>
+                    <input type="text" id="new-user-name" class="profile-input" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                </div>
+                <div class="profile-field-group" style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px;">E-MAIL CORPORATIVO</label>
+                    <input type="email" id="new-user-email" class="profile-input" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                </div>
+                <div class="profile-field-group" style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px;">SENHA INICIAL</label>
+                    <input type="password" id="new-user-pw" class="profile-input" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                </div>
+                <div class="profile-field-group" style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px;">CARGO PRINCIPAL</label>
+                    <select id="new-user-role" class="profile-input" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px;">
+                        <option value="user">Auditor Assistencial</option>
+                        <option value="gestor">Gestor de Unidade</option>
+                        <option value="admin">Administrador Geral</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-subtitle" style="font-size: 11px; font-weight: 700;">MÓDULOS COM ACESSO</label>
+                    <div class="access-list" id="new-user-screens" style="display: flex; gap: 15px; margin-top: 10px;">
+                        <label class="access-item"><input type="checkbox" value="registro" checked> Registro</label>
+                        <label class="access-item"><input type="checkbox" value="dashboard"> Dashboard</label>
+                        <label class="access-item"><input type="checkbox" value="tabulacao"> Tabulação</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-cancel" onclick="UI.closeNewUserModal()">Cancelar</button>
+                <button class="btn-primary-action" onclick="UI.saveNewUser()" style="padding: 10px 20px;">CADASTRAR EQUIPE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Reset de Senha -->
+    <div class="modal-overlay" id="reset-pw-modal">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fas fa-key"></i> Resetar Senha</div>
+                <button class="btn-close-modal" onclick="document.getElementById('reset-pw-modal').style.display='none'"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reset-user-id">
+                <p class="text-subtitle">Defina uma nova senha para <strong id="reset-user-email-label"></strong>:</p>
+                <input type="password" id="new-reset-pw" class="profile-input" style="width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 15px;" placeholder="Mínimo 6 caracteres">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal-save" onclick="UI.confirmResetPassword()">CONFIRMAR RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <header style="margin-bottom: 30px; display: flex; align-items: center; gap: 20px;">
+            <a href="index.html" class="btn-icon" style="color: var(--primary); font-size: 20px;"><i class="fas fa-arrow-left"></i></a>
+            <div>
+                <h1 class="text-title">CONFIGURAÇÕES</h1>
+                <p class="text-subtitle">Gerenciamento de conta e administração do sistema</p>
+            </div>
+        </header>
+
+        <div style="display: block;">
+            <div style="width: 100%;">
+                <div id="meu-perfil" class="card-premium tab-content">
+                    <h3 class="text-title" style="font-size: 20px; margin-bottom: 20px;">MEU PERFIL</h3>
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="prof-name" class="input-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail Corporativo</label>
+                            <input type="email" id="prof-email" class="input-control" disabled style="background: #f1f5f9;">
+                        </div>
+                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--border);">
+                        <button type="submit" class="btn-login" style="width: auto; padding: 10px 25px;">Atualizar Nome</button>
+                    </form>
+                </div>
+
+                <div id="sistema-config" class="card-premium tab-content" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <div>
+                            <h3 class="text-title" style="font-size: 20px; margin-bottom: 5px;">CENTRO DE CONTROLE DO SISTEMA</h3>
+                            <div class="status-pill">
+                                <div class="status-pulse"></div>
+                                SISTEMA OPERACIONAL
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-grid">
+                        <div class="service-card">
+                            <div class="service-card-icon"><i class="fas fa-broom"></i></div>
+                            <h4 style="font-weight: 700; margin-bottom: 8px;">Manutenção de Cache</h4>
+                            <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Limpe os arquivos temporários do navegador para resolver problemas de carregamento.</p>
+                            <button class="btn-modal-cancel" style="width: 100%; font-size: 11px;">LIMPAR CACHE AGORA</button>
+                        </div>
+
+                        <div class="service-card">
+                            <div class="service-card-icon" style="background: #ecfdf5; color: #059669;"><i class="fas fa-sync-alt"></i></div>
+                            <h4 style="font-weight: 700; margin-bottom: 8px;">Sincronização Excel</h4>
+                            <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Força a atualização imediata das listas baseadas na planilha mestre.</p>
+                            <button class="btn-primary-action" style="width: 100%; font-size: 11px; padding: 10px;">SINCRONIZAR BASE</button>
+                        </div>
+
+                        <div class="service-card">
+                            <div class="service-card-icon" style="background: #fff7ed; color: #c2410c;"><i class="fas fa-database"></i></div>
+                            <h4 style="font-weight: 700; margin-bottom: 8px;">Backup de Dados</h4>
+                            <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Gera um ponto de restauração das auditorias realizadas nas últimas 24h.</p>
+                            <button class="btn-modal-cancel" disabled style="width: 100%; font-size: 11px; border: 1px dashed #ccc;">EM BREVE...</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="logs-viewer" class="card-premium tab-content" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <h3 class="text-title" style="font-size: 20px;">LINHA DO TEMPO DE ATIVIDADE</h3>
+                    </div>
+                    <p class="text-subtitle" style="margin-bottom: 25px;">Monitoramento em tempo real das ações administrativas.</p>
+                    
+                    <div class="timeline-list">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <span class="timeline-time">HOJE, 18:12</span>
+                                <div>
+                                    <span class="timeline-user">Desenvolvedor Mestre</span>
+                                    <span style="font-size: 13px;">Acessou as configurações do sistema para atualização de layout.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="background: var(--success);"></div>
+                            <div class="timeline-content" style="border-left-color: var(--success);">
+                                <span class="timeline-time">HOJE, 15:30</span>
+                                <div>
+                                    <span class="timeline-user">Sistema Autônomo</span>
+                                    <span style="font-size: 13px;">Sincronização automática com Excel concluída com sucesso.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="timeline-dot" style="background: var(--primary);"></div>
+                            <div class="timeline-content" style="border-left-color: var(--primary);">
+                                <span class="timeline-time">ONTEM, 22:10</span>
+                                <div>
+                                    <span class="timeline-user">Julia Silva</span>
+                                    <span style="font-size: 13px;">Realizou o upload de 15 novas auditorias via aplicativo.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-primary-action" style="width: auto; padding: 10px 20px; font-size: 12px; margin-top: 15px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; box-shadow: none;">
+                        VER LOGS COMPLETOS
+                    </button>
+                </div>
+
+                <div id="gestao-contas" class="card-premium tab-content" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <div>
+                            <h3 class="text-title" style="font-size: 20px; margin-bottom: 5px;">EQUIPE HOSPITALAR</h3>
+                            <p class="text-subtitle">Gestão de acessos e cargos dos auditores.</p>
+                        </div>
+                        <button onclick="UI.openNewUserModal()" class="btn-login" style="width: auto; background: var(--success); padding: 10px 25px;">
+                            <i class="fas fa-user-plus"></i> CADASTRAR NOVO
+                        </button>
+                    </div>
+                    
+                    <div id="user-grid" class="user-card-grid">
+                        <!-- Injetado dinamicamente via JS como user-card-premium -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="/src/js/services/apiService.js?v=2.0"></script>
+<script src="/src/js/core.js?v=5.1"></script>
+<script>
+    const UI = {
+        showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => {
+                t.style.display = 'none';
+                t.style.opacity = '0';
+            });
+            const activeTab = document.getElementById(id);
+            if (activeTab) {
+                activeTab.style.display = 'block';
+                setTimeout(() => activeTab.style.opacity = '1', 10);
+            }
+        },
+
+        checkHashURL() {
+            let hash = window.location.hash.substring(1);
+            if(hash === 'usuarios') {
+                this.showTab('gestao-contas');
+                this.loadUsers();
+            }
+            else if(hash === 'sistema') this.showTab('sistema-config');
+            else if(hash === 'logs') this.showTab('logs-viewer');
+            else this.showTab('meu-perfil');
+        },
+
+        async loadUsers() {
+            const grid = document.getElementById('user-grid');
+            grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding: 40px; color: #64748b;">Carregando equipe do Supabase...</p>';
+            
+            try {
+                const users = await apiService.getAdminUsers();
+                if (Array.isArray(users)) {
+                    this.renderUsers(users);
+                } else {
+                    grid.innerHTML = '<p style="color:red">Erro na resposta do servidor.</p>';
+                }
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = '<p style="color:red">Erro ao conectar com a API.</p>';
+            }
+        },
+
+        renderUsers(users) {
+            const grid = document.getElementById('user-grid');
+            grid.innerHTML = '';
+            
+            users.forEach(u => {
+                const initials = (u.nome_completo || u.email).split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const card = document.createElement('div');
+                card.className = 'user-card-premium';
+                card.innerHTML = `
+                    <div class="user-avatar-placeholder">${initials}</div>
+                    <div style="font-weight: 700; color: #1e293b; font-size: 14px;">${u.nome_completo || 'Sem Nome'}</div>
+                    <div style="font-size: 11px; color: #64748b; margin-bottom: 10px;">${u.email}</div>
+                    <span class="badge-role ${u.cargo}">${u.cargo === 'admin' ? 'Administrador' : (u.cargo === 'gestor' ? 'Gestor' : 'Auditor')}</span>
+                    
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9; display: flex; justify-content: center; gap: 15px;">
+                        <button class="btn-icon" style="color: var(--excel-blue);" title="Resetar Senha" onclick="UI.openResetPasswordModal('${u.id}', '${u.email}')"><i class="fas fa-key"></i></button>
+                        <button class="btn-icon" style="color: var(--danger);" title="Excluir Permanentemente" onclick="UI.deleteUser('${u.id}')"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        },
+
+        openNewUserModal() { document.getElementById('new-user-modal').style.display = 'flex'; },
+        closeNewUserModal() { document.getElementById('new-user-modal').style.display = 'none'; },
+
+        async saveNewUser() {
+            const payload = {
+                nome_completo: document.getElementById('new-user-name').value,
+                email: document.getElementById('new-user-email').value,
+                password: document.getElementById('new-user-pw').value,
+                cargo: document.getElementById('new-user-role').value,
+                acessos: Array.from(document.querySelectorAll('#new-user-screens input:checked')).map(i => i.value)
+            };
+
+            if(!payload.email || !payload.password) return alert("Email e senha são obrigatórios.");
+
+            try {
+                const res = await apiService.createAdminUser(payload);
+                if(res.status === 'success') {
+                    alert("Usuário criado com sucesso!");
+                    this.closeNewUserModal();
+                    this.loadUsers();
+                } else {
+                    alert("Erro ao criar: " + JSON.stringify(res.detail));
+                }
+            } catch(e) { alert("Erro de conexão."); }
+        },
+
+        openResetPasswordModal(id, email) {
+            document.getElementById('reset-user-id').value = id;
+            document.getElementById('reset-user-email-label').innerText = email;
+            document.getElementById('reset-pw-modal').style.display = 'flex';
+        },
+
+        async confirmResetPassword() {
+            const id = document.getElementById('reset-user-id').value;
+            const pw = document.getElementById('new-reset-pw').value;
+            if(pw.length < 6) return alert("Mínimo 6 caracteres.");
+
+            try {
+                const res = await apiService.resetAdminPassword(id, pw);
+                if(res.status === 'success') {
+                    alert("Senha alterada com sucesso!");
+                    document.getElementById('reset-pw-modal').style.display = 'none';
+                } else { alert("Erro ao trocar senha."); }
+            } catch(e) { alert("Erro de conexão."); }
+        },
+
+        async deleteUser(id) {
+            if(!confirm("Tem certeza que deseja excluir permanentemente este usuário? Esta ação não pode ser desfeita no Supabase.")) return;
+
+            try {
+                const res = await apiService.deleteAdminUser(id);
+                if(res.status === 'success') {
+                    this.loadUsers();
+                } else { alert("Erro ao excluir."); }
+            } catch(e) { alert("Erro de conexão."); }
+        }
+    };
+
+    window.addEventListener('hashchange', () => UI.checkHashURL());
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const user = JSON.parse(localStorage.getItem('hm_user'));
+        if (user) {
+            document.getElementById('prof-name').value = user.nome_completo || user.email;
+            document.getElementById('prof-email').value = user.email;
+        }
+        
+        UI.checkHashURL();
+    });
+</script>
+</body>
+</html>

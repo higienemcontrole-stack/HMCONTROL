@@ -1,0 +1,59 @@
+# Configurações Reais do Servidor
+server_api/config/.env
+server_api/server_log.txt
+server_api/temp_token.txt
+server_api/debug_auth.py
+server_api/update_users.py
+server_api/test_rls*.py
+documentação/
+scripts/
+
+# Arquivos de Ambiente (Legado e Futuro)
+.env
+.env.local
+.env.*.local
+
+# Data and Spreadsheets
+*.xlsx
+*.xls
+*.csv
+*.ods
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+*.exe
+
+# Logs
+*.log
+audit.log
+events/logs ERP/
+
