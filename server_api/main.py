@@ -116,48 +116,64 @@ async def bootstrap_admin(token: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@app.get("/api/debug/health")
-async def debug_health():
-    try:
-        profiles = supabase.table("perfis").select("email").execute()
-        # Pega um exemplo de registro para ver as colunas reais
-        sample_reg = supabase.table("registros").select("*").limit(1).execute()
-        
-        return {
-            "status": "connected",
-            "project_url": SUPABASE_URL,
-            "profiles_count": len(profiles.data),
-            "sample_columns": list(sample_reg.data[0].keys()) if sample_reg.data else "Tabela Vazia",
-            "sample_data": sample_reg.data[0] if sample_reg.data else None
-        }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-@app.get("/api/debug/policies")
-async def debug_policies():
-    try:
-        # Consulta o catálogo do Postgres para encontrar todas as políticas na tabela perfis
-        query = """
-            SELECT policyname, cmd, roles, qual 
-            FROM pg_policies 
-            WHERE tablename = 'perfis';
-        """
-        # Usamos rpc ou uma query direta se o supabase-py permitir, 
-        # mas como queremos os nomes, vamos tentar via rpc ou retornamos erro instrucional
-        res = supabase.postgrest.rpc("get_policies_debug", {}).execute()
-        return {"policies": res.data}
-    except Exception as e:
-        # Se não houver a função RPC, retornamos uma instrução para o usuário criar a função de auditoria
-        return {
-            "status": "rpc_needed",
-            "message": "Para eu ver os nomes das regras, execute este SQL no Supabase:",
-            "sql": "CREATE OR REPLACE FUNCTION get_policies_debug() RETURNS TABLE(policyname text, cmd text, roles text[], qual text) LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN RETURN QUERY SELECT p.policyname::text, p.cmd::text, p.roles::text[], p.qual::text FROM pg_policies p WHERE p.tablename = 'perfis'; END; $$;"
-        }
-
 @app.get("/api/admin/users")
 async def list_users():
     profiles = supabase.table("perfis").select("*").order("nome_completo").execute()
     return profiles.data
+
+@app.get("/api/excel/tabulation")
+async def get_tabulation():
+    try:
+        data = await fetch_all_registros_from_supabase(force_refresh=True)
+        mapped = []
+        for r in data:
+            prod = r.get("produto_utilizado", "")
+            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
+            
+            mapped.append({
+                "Mês (automático)": r.get("mes"),
+                "Ano (automático)": r.get("ano"),
+                "Observador": r.get("observador"),
+                "Unidade": r.get("unidade"),
+                "Profissional Auditado": r.get("profissional_auditado"),
+                "Momento Auditado": r.get("momento_auditado"),
+                "Produto utilizado": prod,
+                "HM realizada?": hm_status,
+                "Login": r.get("usuario_login"),
+                "Horário": r.get("horario_envio")
+            })
+        return mapped
+    except Exception as e:
+        logger.error(f"Erro na tabulação: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/excel/dashboard")
+async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
+    try:
+        data = await fetch_all_registros_from_supabase()
+        excel_ready = []
+        for r in data:
+            prod = r.get("produto_utilizado", "")
+            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
+            
+            excel_ready.append({
+                "Mês (automático)": r.get("mes"),
+                "Ano (automático)": r.get("ano"),
+                "Observador": r.get("observador"),
+                "Unidade": r.get("unidade"),
+                "Profissional Auditado": r.get("profissional_auditado"),
+                "Momento Auditado": r.get("momento_auditado"),
+                "Produto utilizado": prod,
+                "HM realizada?": hm_status,
+                "Login": r.get("usuario_login"),
+                "Horário": r.get("horario_envio")
+            })
+            
+        excel.update_from_external_data(excel_ready)
+        return excel.get_dashboard_data(unit, month, year)
+    except Exception as e:
+        logger.error(f"Erro no dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/admin/users")
 async def create_user(user: AdminUserCreate):
@@ -184,51 +200,6 @@ async def delete_user(user_id: str):
 async def get_profile(user_id: str = Header(...)):
     profile = supabase.table("perfis").select("*").eq("id", user_id).single().execute()
     return profile.data
-
-@app.get("/api/excel/tabulation")
-async def get_tabulation():
-    data = await fetch_all_registros_from_supabase()
-    mapped = []
-    mes_nomes = {1:"jan",2:"fev",3:"mar",4:"abr",5:"mai",6:"jun",7:"jul",8:"ago",9:"set",10:"out",11:"nov",12:"dez"}
-    for r in data:
-        dt_base = r.get("data_auditoria") or r.get("created_at", "")
-        try:
-            dt_obj = datetime.strptime(str(dt_base).split("T")[0], "%Y-%m-%d")
-            m_txt = mes_nomes.get(dt_obj.month, "jan")
-            a_txt = str(dt_obj.year)
-        except:
-            m_txt = "jan"; a_txt = "2024"
-            
-        mapped.append({
-            "id": r.get("id"),
-            "Observador": r.get("observador"),
-            "Unidade": r.get("unidade"),
-            "Profissional": r.get("profissional_auditado"),
-            "Momento": r.get("momento_auditado"),
-            "Produto": r.get("produto_utilizado"),
-            "Data": dt_base,
-            "Mês (automático)": m_txt,
-            "Ano (automático)": a_txt
-        })
-    return mapped
-
-@app.get("/api/excel/dashboard")
-async def get_dashboard_data(unit: Optional[str] = None):
-    raw_data = await fetch_all_registros_from_supabase()
-    excel_ready = []
-    for r in raw_data:
-        excel_ready.append({
-            "observador": r.get("observador"),
-            "unidade": r.get("unidade"),
-            "profissional_auditado": r.get("profissional_auditado"),
-            "momento_auditado": r.get("momento_auditado"),
-            "produto_utilizado": r.get("produto_utilizado"),
-            "data_auditoria": r.get("data_auditoria") or r.get("created_at"),
-            "mes": r.get("mes"),
-            "ano": r.get("ano")
-        })
-    excel.update_from_external_data(excel_ready)
-    return excel.get_dashboard_data(unit=unit)
 
 @app.post("/api/registros")
 async def save_registro(reg: RegistroCreate):
