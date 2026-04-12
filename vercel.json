@@ -1,10 +1,10 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/", "destination": "/public/index.html" },
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/src/(.*)", "destination": "/public/src/$1" },
     { "source": "/(.*\\.html)", "destination": "/public/$1" },
-    { "source": "/favicon.ico", "destination": "/public/favicon.ico" }
+    { "source": "/favicon.ico", "destination": "/public/favicon.ico" },
+    { "source": "/", "destination": "/api/index.py" }
   ]
 }

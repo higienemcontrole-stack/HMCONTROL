@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, Header, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from typing import List, Optional
 from pydantic import BaseModel
 import os
@@ -98,6 +98,12 @@ async def bootstrap_admin(token: str):
         try:
             auth_admin.create_user_admin(email, password, {"full_name": "Dev Master"})
         except: pass
+    return {"status": "success", "message": "Admin bootstrapper executed."}
+
+@app.get("/")
+async def root():
+    """Redireciona o acesso da raiz para a página inicial do frontend"""
+    return RedirectResponse(url="/index.html")
 
         prof_data = {
             "nome_completo": "Dev Master",
