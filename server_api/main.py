@@ -116,6 +116,23 @@ async def bootstrap_admin(token: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.get("/api/debug/health")
+async def debug_health():
+    try:
+        profiles = supabase.table("perfis").select("email").execute()
+        # Pega um exemplo de registro para ver as colunas reais
+        sample_reg = supabase.table("registros").select("*").limit(1).execute()
+        
+        return {
+            "status": "connected",
+            "project_url": SUPABASE_URL,
+            "profiles_count": len(profiles.data),
+            "sample_columns": list(sample_reg.data[0].keys()) if sample_reg.data else "Tabela Vazia",
+            "sample_data": sample_reg.data[0] if sample_reg.data else None
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/api/debug/policies")
 async def debug_policies():
     try:
