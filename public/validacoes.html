@@ -150,12 +150,12 @@
     </main>
 </div>
 
+<script src="/src/js/services/apiService.js"></script>
 <script src="/src/js/core.js?v=5.1"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         try {
-            const res = await fetch('/api/excel/validations');
-            const data = await res.json();
+            const data = await apiService.getValidations();
             
             const renderBadges = (id, list) => {
                 const el = document.getElementById(id);

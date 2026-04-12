@@ -177,6 +177,30 @@ async def get_tabulation():
         logger.error(f"Erro na tabulação: {error_details}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
+@app.get("/api/excel/validations")
+async def get_validations():
+    """Retorna as listas oficiais do Excel (Unidades, Cargos, etc)"""
+    try:
+        return excel.get_dropdown_lists()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/cache/clear")
+async def clear_cache():
+    """Reseta o cache global de registros"""
+    global GLOBAL_DATA_CACHE
+    GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
+    return {"status": "success", "message": "Cache limpo."}
+
+@app.post("/api/admin/sync")
+async def sync_database():
+    """Força sincronização total com Supabase"""
+    try:
+        await fetch_all_registros_from_supabase(force_refresh=True)
+        return {"status": "success", "message": "Sincronização concluída."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/excel/pivot")
 async def get_pivot():
     try:
@@ -253,6 +277,7 @@ async def save_registro(reg: RegistroCreate):
             "unidade": reg.unidade, 
             "momento_auditado": reg.momento_auditado, 
             "produto_utilizado": reg.produto_utilizado,
+            "hm_realizada": reg.hm_realizada, # Salvando o dado de adesão real
             "usuario_login": reg.usuario_login or "aplicativo",
             "data_auditoria": data_ref,
             "mes": mes_nome,

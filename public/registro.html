@@ -203,17 +203,18 @@
     document.getElementById('registro-form').onsubmit = async (e) => {
         e.preventDefault();
         
+        const hm_selected = document.querySelector('input[name="hm_realizada"]:checked');
+        if(!hm_selected) return alert("Por favor, selecione se a higienização foi realizada.");
+
         const payload = {
             observador: document.getElementById('reg-observador').value,
             unidade: document.getElementById('reg-unidade').value,
-            categoria: document.getElementById('reg-categoria').value,
-            momento: document.getElementById('reg-momento').value,
-            insumo: document.getElementById('reg-insumo').value,
-            // Valores padrão para os campos removidos da UI mas necessários no backend
-            tecnica: 'Sim',
-            adornos: 'Não',
-            luvas: 'Não',
-            data_hora: new Date().toISOString()
+            profissional_auditado: document.getElementById('reg-categoria').value,
+            momento_auditado: document.getElementById('reg-momento').value,
+            produto_utilizado: document.getElementById('reg-insumo').value,
+            hm_realizada: hm_selected.value,
+            usuario_login: (JSON.parse(localStorage.getItem('hm_user')) || {}).email || 'web_app',
+            data_auditoria: new Date().toISOString()
         };
 
         try {
