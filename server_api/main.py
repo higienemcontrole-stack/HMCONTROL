@@ -177,6 +177,34 @@ async def get_tabulation():
         logger.error(f"Erro na tabulação: {error_details}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
+@app.get("/api/excel/pivot")
+async def get_pivot():
+    try:
+        data = await fetch_all_registros_from_supabase()
+        excel_ready = []
+        for r in data:
+            prod = r.get("produto_utilizado", "")
+            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
+            
+            excel_ready.append({
+                "Mês (automático)": r.get("mes"),
+                "Ano (automático)": r.get("ano"),
+                "Observador": r.get("observador"),
+                "Unidade": r.get("unidade"),
+                "Profissional Auditado": r.get("profissional_auditado"),
+                "Momento Auditado": r.get("momento_auditado"),
+                "Produto utilizado": prod,
+                "HM realizada?": hm_status,
+                "Login": r.get("usuario_login"),
+                "Horário": r.get("horario_envio")
+            })
+            
+        excel.update_from_external_data(excel_ready)
+        return excel.get_pivot_data()
+    except Exception as e:
+        logger.error(f"Erro no pivot: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar Tabela Dinâmica.")
+
 # --- GESTÃO DE USUÁRIOS ---
 @app.get("/api/admin/users")
 async def list_users():
