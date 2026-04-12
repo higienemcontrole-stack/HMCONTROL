@@ -82,10 +82,20 @@ class Core {
 
     bindGlobalEvents() {
         document.addEventListener('click', (e) => {
+            // Dropdown de Usuário
             const dropdown = document.getElementById('user-dropdown');
             const trigger = document.getElementById('user-menu-trigger');
             if (dropdown && dropdown.classList.contains('active')) {
                 if (!trigger.contains(e.target)) dropdown.classList.remove('active');
+            }
+
+            // Menu Mobile (Responsivo)
+            const navLinks = document.querySelector('.nav-links');
+            const mobileTrigger = document.getElementById('mobile-menu-toggle');
+            if (navLinks && navLinks.classList.contains('active') && mobileTrigger) {
+                if (!mobileTrigger.contains(e.target) && !navLinks.contains(e.target)) {
+                    navLinks.classList.remove('active');
+                }
             }
         });
     }
@@ -96,6 +106,13 @@ class Core {
         if (event) event.stopPropagation();
         const dropdown = document.getElementById('user-dropdown');
         if (dropdown) dropdown.classList.toggle('active');
+    }
+
+    toggleMobileMenu() {
+        const navLinks = document.querySelector('.nav-links');
+        if (navLinks) {
+            navLinks.classList.toggle('active');
+        }
     }
 
     async openProfileModal() {

@@ -8,23 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Fallback de Segurança - Navbar */
-        .navbar-superior {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            background: #4472C4 !important; /* Azul Master Excel mais claro */
-            color: white !important;
-            padding: 0 40px !important;
-            height: 60px !important;
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 9999 !important;
-            width: 100% !important;
-        }
-        .nav-links { display: flex !important; gap: 25px !important; }
-        .nav-link { color: white !important; text-decoration: none !important; font-weight: 600 !important; font-size: 12px !important; }
-        .nav-link.active { border-bottom: 3px solid white !important; }
 
         /* Estilo Excel Twin */
         .tabulacao-container {
@@ -42,6 +25,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            flex-wrap: wrap; /* Permite quebra de linha em filtros no mobile */
         }
 
         .filter-group { display: flex; align-items: center; gap: 10px; }
@@ -59,7 +43,7 @@
             border: 1px solid #ACB9CA;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             max-width: 100%;
-            overflow-x: hidden; /* Garantia de NO HORIZONTAL SCROLL */
+            overflow-x: auto; /* Permite scroll horizontal em tabelas largas */
         }
 
         table {
@@ -165,6 +149,9 @@
 
 <div class="app-container">
     <header class="navbar-superior">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle" onclick="HM.toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
         <div class="nav-brand">HM CONTROL</div>
         <nav class="nav-links">
             <a href="/index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>

@@ -35,6 +35,22 @@
     gap: 20px;
     padding: 20px;
     background: var(--bg-main);
+    transition: all 0.3s ease;
+}
+
+/* Responsividade de Layout Base */
+@media (max-width: 1024px) {
+    .dashboard-wrapper {
+        grid-template-columns: 1fr; /* Slicer panel vai para o topo */
+        padding: 15px;
+    }
+    
+    .slicer-panel {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        width: 100%;
+    }
 }
 
 .slicer-panel {
@@ -103,8 +119,15 @@
 
 .charts-grid {
     display: grid;
-    grid-template-columns: 1.8fr 1fr; /* Proporção 2:1 do Excel */
+    grid-template-columns: 1.8fr 1fr; /* Proporção 2:1 do Excel em telas grandes */
     gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr; /* Empilha gráficos em tablets/mobile */
+        gap: 15px;
+    }
 }
 
 .chart-card-excel {
@@ -121,6 +144,14 @@
 
 .chart-card-excel.wide { grid-column: span 2; }
 .chart-card-excel.large { grid-column: span 1; height: 480px; }
+
+@media (max-width: 1024px) {
+    .chart-card-excel.wide, .chart-card-excel.large {
+        grid-column: span 1;
+        height: auto;
+        min-height: 350px;
+    }
+}
 
 .chart-card-excel h3 {
     text-align: center;
@@ -221,7 +252,59 @@ body {
     gap: 20px;
     height: 100%;
     margin: 0 auto;
-    flex-wrap: nowrap; /* Impede quebra de linha */
+    flex-wrap: nowrap;
+}
+
+/* Mobile Nav Toggle Icon */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+    .navbar-superior {
+        padding: 0 20px;
+    }
+    
+    .nav-links {
+        display: none; /* Esconde links padrão no mobile */
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 60px);
+        background: var(--excel-blue);
+        flex-direction: column;
+        padding: 20px;
+        z-index: 5000;
+        gap: 0;
+        animation: slideInLeft 0.3s forwards;
+    }
+    
+    .nav-links.active {
+        display: flex;
+    }
+    
+    .nav-link {
+        height: 60px;
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        font-size: 14px;
+        padding: 0 15px;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
 }
 
 .nav-link {
@@ -794,10 +877,48 @@ body {
     margin-top: 20px;
 }
 
-.timeline-list::before {
-    content: '';
-    position: absolute;
-    left: 7px;
+/* 5. Home Modules Grid - Responsiva */
+.modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-top: 80px;
+    padding-bottom: 50px;
+}
+
+@media (max-width: 1024px) {
+    .modules-grid {
+        grid-template-columns: repeat(2, 1fr);
+        margin-top: 40px;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modules-grid {
+        grid-template-columns: 1fr;
+        margin-top: 20px;
+    }
+    
+/* 6. Validation & Config Grids - Responsivas */
+.validation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+    .validation-grid {
+        grid-template-columns: 1fr; /* Empilha em tablets e mobile */
+    }
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
     top: 0;
     width: 2px;
     height: 100%;
