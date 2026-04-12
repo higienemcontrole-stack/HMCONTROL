@@ -17,13 +17,12 @@ from .models.schemas import UserLogin, UserProfileUpdate, AdminUserCreate, Regis
 # Configurações de Ambiente (Vercel Ready)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Prioriza variáveis do sistema (Dashboard Vercel) sobre arquivos locais
+# Prioriza variáveis do sistema (Dashboard Vercel) over arquivos locais
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-# Tenta encontrar a chave em diferentes nomes comuns
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    logger.error(f"ERRO CRÍTICO: Variáveis do Supabase ausentes. URL: {'OK' if SUPABASE_URL else 'MISSING'}, KEY: {'OK' if SUPABASE_KEY else 'MISSING'}")
+    logger.error(f"ERRO CRÍTICO: Variáveis do Supabase ausentes.")
 
 # --- INICIALIZAÇÃO ÚNICA DO APP ---
 app = FastAPI(title="HM CONTROL API")
@@ -39,7 +38,8 @@ app.add_middleware(
 # Inicializar Componentes
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 auth_admin = AuthManager(SUPABASE_URL, SUPABASE_KEY)
-# Caminho absoluto para garantir consistncia no Vercel
+
+# Caminho absoluto para garantir consistência no Vercel
 EXCEL_PATH = os.path.join(BASE_DIR, "logic", "Planilha NOVA de higiene de Mãos.xlsx")
 excel = ExcelProcessor(EXCEL_PATH)
 
@@ -49,24 +49,31 @@ GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
 async def fetch_all_registros_from_supabase(force_refresh=False):
     global GLOBAL_DATA_CACHE
     now = datetime.now()
-    if not force_refresh and GLOBAL_DATA_CACHE["last_sync"] and (now - GLOBAL_DATA_CACHE["last_sync"]).seconds < 120:
+    
+    # Cache de 60 segundos para performance no dashboard
+    if not force_refresh and GLOBAL_DATA_CACHE["last_sync"] and (now - GLOBAL_DATA_CACHE["last_sync"]).seconds < 60:
         return GLOBAL_DATA_CACHE["records"]
+        
     try:
         all_registros = []
         offset = 0
         while True:
+            # Busca em blocos de 1000 (limite do Supabase)
             chunk = supabase.table("registros").select("*").order("created_at", desc=True).range(offset, offset + 999).execute()
             if not chunk.data: break
-            all_registros.extend(chunk.data); offset += 1000
+            all_registros.extend(chunk.data)
+            offset += 1000
             if len(chunk.data) < 1000: break
         
+        # Filtra registros válidos (com observador)
         real_records = [r for r in all_registros if r.get("observador")]
         GLOBAL_DATA_CACHE = {"records": real_records, "last_sync": now}
         return real_records
     except Exception as e:
         logger.error(f"Erro ao buscar no Supabase: {str(e)}")
-        return []
+        return GLOBAL_DATA_CACHE["records"] if GLOBAL_DATA_CACHE["records"] else []
 
+# --- ROTAS DE AUTENTICAÇÃO ---
 @app.post("/api/auth/login")
 async def login(credentials: UserLogin):
     try:
@@ -78,48 +85,63 @@ async def login(credentials: UserLogin):
 
 @app.get("/api/admin/bootstrap")
 async def bootstrap_admin(token: str):
-    # Verificação de segurança via Token de Ambiente
     expected_token = os.environ.get("ADMIN_BOOTSTRAP_TOKEN")
     if not expected_token or token != expected_token:
-        raise HTTPException(status_code=403, detail="Acesso Proibido: Token Inválido")
+        raise HTTPException(status_code=403, detail="Token Inválido")
 
     try:
-        # Credenciais são obrigatórias via variáveis de ambiente da Vercel
         email = os.environ.get("ADMIN_EMAIL")
         password = os.environ.get("ADMIN_PASSWORD")
-        
         if not email or not password:
-            return {"status": "error", "message": "ADMIN_EMAIL ou ADMIN_PASSWORD não configurados na Vercel."}
+            return {"status": "error", "message": "Variáveis ADMIN_EMAIL/PASSWORD ausentes na Vercel."}
         
         try:
             auth_admin.create_user_admin(email, password, {"full_name": "Dev Master"})
-        except Exception as e:
-            if "already been registered" not in str(e):
-                logger.warning(f"Bootstrap Auth Note: {str(e)}")
+        except: pass
 
-        # Garante que o perfil existe com todos os acessos
-        profiles = supabase.table("perfis").select("id").eq("email", email).execute()
         prof_data = {
             "nome_completo": "Dev Master",
             "email": email,
             "cargo": "admin",
             "acessos": ["dashboard", "registro", "tabulacao", "dinamica", "validacoes", "configuracoes"]
         }
-        
+        profiles = supabase.table("perfis").select("id").eq("email", email).execute()
         if len(profiles.data) > 0:
-            user_id = profiles.data[0]["id"]
-            supabase.table("perfis").update(prof_data).eq("id", user_id).execute()
-            return {"status": "success", "message": "Resgate concluído com segurança."}
-        else:
-            return {"status": "partial_success", "message": "Usuário autenticado. Logue para criar o perfil."}
-            
+            supabase.table("perfis").update(prof_data).eq("id", profiles.data[0]["id"]).execute()
+            return {"status": "success", "message": "Resgate concluído."}
+        return {"status": "partial", "message": "Usuário Auth criado. Logue para ativar perfil."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@app.get("/api/admin/users")
-async def list_users():
-    profiles = supabase.table("perfis").select("*").order("nome_completo").execute()
-    return profiles.data
+# --- ROTAS DE DADOS (DASHBOARD E TABULAÇÃO) ---
+@app.get("/api/excel/dashboard")
+async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
+    try:
+        data = await fetch_all_registros_from_supabase()
+        excel_ready = []
+        for r in data:
+            prod = r.get("produto_utilizado", "")
+            # Lógica de Adesão: Se usou produto (não foi "Não Realizou"), HM é Sim.
+            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
+            
+            excel_ready.append({
+                "Mês (automático)": r.get("mes"),
+                "Ano (automático)": r.get("ano"),
+                "Observador": r.get("observador"),
+                "Unidade": r.get("unidade"),
+                "Profissional Auditado": r.get("profissional_auditado"),
+                "Momento Auditado": r.get("momento_auditado"),
+                "Produto utilizado": prod,
+                "HM realizada?": hm_status,
+                "Login": r.get("usuario_login"),
+                "Horário": r.get("horario_envio")
+            })
+            
+        excel.update_from_external_data(excel_ready)
+        return excel.get_dashboard_data(unit, month, year)
+    except Exception as e:
+        logger.error(f"Erro no dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/excel/tabulation")
 async def get_tabulation():
@@ -147,33 +169,11 @@ async def get_tabulation():
         logger.error(f"Erro na tabulação: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/excel/dashboard")
-async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
-    try:
-        data = await fetch_all_registros_from_supabase()
-        excel_ready = []
-        for r in data:
-            prod = r.get("produto_utilizado", "")
-            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
-            
-            excel_ready.append({
-                "Mês (automático)": r.get("mes"),
-                "Ano (automático)": r.get("ano"),
-                "Observador": r.get("observador"),
-                "Unidade": r.get("unidade"),
-                "Profissional Auditado": r.get("profissional_auditado"),
-                "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": prod,
-                "HM realizada?": hm_status,
-                "Login": r.get("usuario_login"),
-                "Horário": r.get("horario_envio")
-            })
-            
-        excel.update_from_external_data(excel_ready)
-        return excel.get_dashboard_data(unit, month, year)
-    except Exception as e:
-        logger.error(f"Erro no dashboard: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+# --- GESTÃO DE USUÁRIOS ---
+@app.get("/api/admin/users")
+async def list_users():
+    profiles = supabase.table("perfis").select("*").order("nome_completo").execute()
+    return profiles.data
 
 @app.post("/api/admin/users")
 async def create_user(user: AdminUserCreate):
@@ -201,6 +201,7 @@ async def get_profile(user_id: str = Header(...)):
     profile = supabase.table("perfis").select("*").eq("id", user_id).single().execute()
     return profile.data
 
+# --- SALVAR REGISTRO ---
 @app.post("/api/registros")
 async def save_registro(reg: RegistroCreate):
     try:
@@ -228,12 +229,6 @@ async def save_registro(reg: RegistroCreate):
         logger.error(f"Erro ao salvar registro: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Nota: No Vercel, o roteamento de arquivos estticos (HTML) 
-#  feito via vercel.json. O backend atua puramente como API.
-
 if __name__ == "__main__":
     import uvicorn
-    # Para execuo local
     uvicorn.run("main:app", host="0.0.0.0", port=8010, reload=True)
-
-# Deploy unblocked with authorized author
