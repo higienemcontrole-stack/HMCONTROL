@@ -113,7 +113,8 @@ async def bootstrap_admin(token: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# --- ROTAS DE DADOS (DASHBOARD E TABULAÇÃO) ---
+import traceback
+
 @app.get("/api/excel/dashboard")
 async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
     try:
@@ -121,7 +122,6 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         excel_ready = []
         for r in data:
             prod = r.get("produto_utilizado", "")
-            # Lógica de Adesão: Se usou produto (não foi "Não Realizou"), HM é Sim.
             hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
             
             excel_ready.append({
@@ -140,12 +140,14 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         excel.update_from_external_data(excel_ready)
         return excel.get_dashboard_data(unit, month, year)
     except Exception as e:
-        logger.error(f"Erro no dashboard: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_details = traceback.format_exc()
+        logger.error(f"Erro no dashboard: {error_details}")
+        raise HTTPException(status_code=500, detail={"error": str(e), "traceback": error_details})
 
 @app.get("/api/excel/tabulation")
 async def get_tabulation():
     try:
+        # Busca com force_refresh para garantir dados novos na tabela
         data = await fetch_all_registros_from_supabase(force_refresh=True)
         mapped = []
         for r in data:
@@ -166,8 +168,9 @@ async def get_tabulation():
             })
         return mapped
     except Exception as e:
-        logger.error(f"Erro na tabulação: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_details = traceback.format_exc()
+        logger.error(f"Erro na tabulação: {error_details}")
+        raise HTTPException(status_code=500, detail={"error": str(e), "traceback": error_details})
 
 # --- GESTÃO DE USUÁRIOS ---
 @app.get("/api/admin/users")
