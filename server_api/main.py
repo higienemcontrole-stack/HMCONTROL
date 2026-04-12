@@ -98,12 +98,6 @@ async def bootstrap_admin(token: str):
         try:
             auth_admin.create_user_admin(email, password, {"full_name": "Dev Master"})
         except: pass
-    return {"status": "success", "message": "Admin bootstrapper executed."}
-
-@app.get("/")
-async def root():
-    """Redireciona o acesso da raiz para a página inicial do frontend"""
-    return RedirectResponse(url="/index.html")
 
         prof_data = {
             "nome_completo": "Dev Master",
@@ -118,6 +112,11 @@ async def root():
         return {"status": "partial", "message": "Usuário Auth criado. Logue para ativar perfil."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+@app.get("/")
+async def root():
+    """Redireciona o acesso da raiz para a página inicial do frontend"""
+    return RedirectResponse(url="/index.html")
 
 import traceback
 
