@@ -14,7 +14,8 @@ class ExcelProcessor:
             try:
                 # Carregar apenas VALIDAÇÕES do Excel (Listas de Unidades, etc)
                 self.validations_df = pd.read_excel(self.file_path, sheet_name='VALIDAÇÕES')
-                # A Tabulação Geral inicia vazia e é preenchida pelo Supabase/Extern                self.df = pd.DataFrame(columns=[
+                # A Tabulação Geral inicia vazia e é preenchida pelo Supabase/Extern
+                self.df = pd.DataFrame(columns=[
                     'Mês (automático)', 'Ano (automático)', 'Observador', 'Unidade', 
                     'Profissional Auditado', 'Momento Auditado', 'Produto utilizado', 
                     'Login', 'Horário'
