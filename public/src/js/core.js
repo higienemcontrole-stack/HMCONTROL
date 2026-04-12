@@ -228,6 +228,24 @@ class Core {
         } finally { btn.disabled = false; }
     }
 
+    async syncDatabase() {
+        if (!confirm('Deseja forçar a sincronização total com o banco de dados?')) return;
+        try {
+            await apiService.syncDatabase();
+            alert('Sincronização concluída com sucesso!');
+            window.location.reload();
+        } catch (err) { alert('Falha na sincronização.'); }
+    }
+
+    async clearCache() {
+        if (!confirm('Deseja limpar o cache global de registros?')) return;
+        try {
+            await apiService.clearCache();
+            alert('Cache limpo com sucesso!');
+            window.location.reload();
+        } catch (err) { alert('Falha ao limpar cache.'); }
+    }
+
     logout() {
         localStorage.clear();
         window.location.href = 'login.html';

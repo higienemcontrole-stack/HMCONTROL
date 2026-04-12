@@ -75,6 +75,15 @@ const apiService = {
         return response.json();
     },
 
+    async resetAdminPassword(userId, newPassword) {
+        const token = localStorage.getItem('hm_token');
+        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_RESET_PW}`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ user_id: userId, new_password: newPassword })
         });
         return response.json();
     },

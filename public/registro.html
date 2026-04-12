@@ -27,9 +27,8 @@
             <div class="nav-dropdown">
                 <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
                 <div class="nav-dropdown-content">
-                    <a href="/configuracoes.html#sistema"><i class="fas fa-server"></i> Sistema</a>
-                    <a href="/configuracoes.html#usuarios"><i class="fas fa-users-cog"></i> Usuários</a>
-                    <a href="/configuracoes.html#logs"><i class="fas fa-clipboard-list"></i> Logs</a>
+                    <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sincronizar Base</a>
+                    <a href="javascript:HM.clearCache()"><i class="fas fa-eraser"></i> Limpar Cache</a>
                 </div>
             </div>
         </nav>
@@ -203,18 +202,14 @@
     document.getElementById('registro-form').onsubmit = async (e) => {
         e.preventDefault();
         
-        const hm_selected = document.querySelector('input[name="hm_realizada"]:checked');
-        if(!hm_selected) return alert("Por favor, selecione se a higienização foi realizada.");
-
         const payload = {
             observador: document.getElementById('reg-observador').value,
             unidade: document.getElementById('reg-unidade').value,
             profissional_auditado: document.getElementById('reg-categoria').value,
             momento_auditado: document.getElementById('reg-momento').value,
             produto_utilizado: document.getElementById('reg-insumo').value,
-            hm_realizada: hm_selected.value,
             usuario_login: (JSON.parse(localStorage.getItem('hm_user')) || {}).email || 'web_app',
-            data_auditoria: new Date().toISOString()
+            data_auditoria: new Date().toISOString().split('T')[0]
         };
 
         try {

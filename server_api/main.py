@@ -126,9 +126,6 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         data = await fetch_all_registros_from_supabase()
         excel_ready = []
         for r in data:
-            prod = r.get("produto_utilizado", "")
-            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
-            
             excel_ready.append({
                 "Mês (automático)": r.get("mes"),
                 "Ano (automático)": r.get("ano"),
@@ -136,8 +133,7 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
                 "Unidade": r.get("unidade"),
                 "Profissional Auditado": r.get("profissional_auditado"),
                 "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": prod,
-                "HM realizada?": hm_status,
+                "Produto utilizado": r.get("produto_utilizado", ""),
                 "Login": r.get("usuario_login"),
                 "Horário": r.get("horario_envio")
             })
@@ -145,20 +141,15 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         excel.update_from_external_data(excel_ready)
         return excel.get_dashboard_data(unit, month, year)
     except Exception as e:
-        error_details = traceback.format_exc()
-        logger.error(f"Erro no dashboard: {error_details}")
+        logger.error(f"Erro no dashboard: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao processar dados do Dashboard.")
 
 @app.get("/api/excel/tabulation")
 async def get_tabulation():
     try:
-        # Busca com force_refresh para garantir dados novos na tabela
         data = await fetch_all_registros_from_supabase(force_refresh=True)
         mapped = []
         for r in data:
-            prod = r.get("produto_utilizado", "")
-            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
-            
             mapped.append({
                 "Mês (automático)": r.get("mes"),
                 "Ano (automático)": r.get("ano"),
@@ -166,15 +157,13 @@ async def get_tabulation():
                 "Unidade": r.get("unidade"),
                 "Profissional Auditado": r.get("profissional_auditado"),
                 "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": prod,
-                "HM realizada?": hm_status,
+                "Produto utilizado": r.get("produto_utilizado", ""),
                 "Login": r.get("usuario_login"),
                 "Horário": r.get("horario_envio")
             })
         return mapped
     except Exception as e:
-        error_details = traceback.format_exc()
-        logger.error(f"Erro na tabulação: {error_details}")
+        logger.error(f"Erro na tabulação: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
 @app.get("/api/excel/validations")
@@ -207,9 +196,6 @@ async def get_pivot():
         data = await fetch_all_registros_from_supabase()
         excel_ready = []
         for r in data:
-            prod = r.get("produto_utilizado", "")
-            hm_status = "Não" if "Não Realizou" in str(prod) else "Sim"
-            
             excel_ready.append({
                 "Mês (automático)": r.get("mes"),
                 "Ano (automático)": r.get("ano"),
@@ -217,8 +203,7 @@ async def get_pivot():
                 "Unidade": r.get("unidade"),
                 "Profissional Auditado": r.get("profissional_auditado"),
                 "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": prod,
-                "HM realizada?": hm_status,
+                "Produto utilizado": r.get("produto_utilizado", ""),
                 "Login": r.get("usuario_login"),
                 "Horário": r.get("horario_envio")
             })
@@ -277,7 +262,6 @@ async def save_registro(reg: RegistroCreate):
             "unidade": reg.unidade, 
             "momento_auditado": reg.momento_auditado, 
             "produto_utilizado": reg.produto_utilizado,
-            "hm_realizada": reg.hm_realizada, # Salvando o dado de adesão real
             "usuario_login": reg.usuario_login or "aplicativo",
             "data_auditoria": data_ref,
             "mes": mes_nome,

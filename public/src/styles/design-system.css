@@ -281,34 +281,42 @@ body {
     }
     
     .nav-links {
-        display: none; /* Esconde links padrão no mobile */
+        display: none;
         position: fixed;
         top: 0;
         left: 0;
-        width: 280px; /* Sidebar Compacta */
-        height: 100vh;
-        background: #003a8c; /* Azul Premium mais profundo */
-        flex-direction: column;
-        padding: 80px 10px 20px; /* Mais espaço no topo para o botão hambúrguer */
+        width: 280px; 
+        height: 100vh !important;
+        background: #003a8c !important; 
+        flex-direction: column !important;
+        padding: 60px 0 20px !important; /* Menos padding no topo para grudar */
+        margin: 0 !important;
         z-index: 5000;
-        gap: 2px; /* Espaço mínimo controlado entre itens */
-        justify-content: flex-start !important; /* ESSENCIAL: Agrupa tudo no topo */
+        gap: 0 !important; /* Zero gap inicial, usaremos padding no link */
+        justify-content: flex-start !important;
+        align-items: flex-start !important;
         box-shadow: 10px 0 30px rgba(0,0,0,0.5);
         animation: slideInLeft 0.3s forwards;
         border-right: 2px solid var(--excel-orange);
+        overflow-y: auto;
     }
     
     .nav-links.active {
-        display: flex;
+        display: flex !important;
     }
     
     .nav-link {
-        height: 48px; /* Mais compacto: 48px em vez de 55px */
-        width: 100%;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        font-size: 13px;
-        padding: 0 15px;
-        justify-content: flex-start;
+        height: 50px !important;
+        width: 100% !important;
+        flex: none !important;
+        margin: 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+        font-size: 14px;
+        padding: 0 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        color: white !important;
+        background: transparent !important;
     }
 
     /* Ajuste Dropdown para Modo Acordeão na Sidebar */
