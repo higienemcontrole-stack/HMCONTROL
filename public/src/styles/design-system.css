@@ -31,8 +31,8 @@
 
 .dashboard-wrapper {
     display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr; /* Removida barra lateral: filtros agora vão para o topo full-width */
+    gap: 15px;
     padding: 20px;
     background: var(--bg-main);
     transition: all 0.3s ease;
@@ -42,21 +42,24 @@
 @media (max-width: 1024px) {
     .dashboard-wrapper {
         grid-template-columns: 1fr; /* Slicer panel vai para o topo */
-        padding: 15px;
+        padding: 10px;
     }
     
     .slicer-panel {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
         width: 100%;
+        margin-bottom: 20px;
     }
 }
 
 .slicer-panel {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr; /* Horizontal no Desktop: Unidade mais larga, tempos menores */
     gap: 15px;
+    margin-bottom: 25px;
+    width: 100%;
 }
 
 .slicer-box {
@@ -100,7 +103,7 @@
 
 .slicer-list {
     list-style: none;
-    max-height: 250px;
+    max-height: 200px;
     overflow-y: auto;
     padding: 5px 0;
 }
