@@ -93,7 +93,7 @@ async def bootstrap_admin(token: str):
         email = os.environ.get("ADMIN_EMAIL")
         password = os.environ.get("ADMIN_PASSWORD")
         if not email or not password:
-            return {"status": "error", "message": "Variáveis ADMIN_EMAIL/PASSWORD ausentes na Vercel."}
+            return {"status": "error", "message": "Variaveis ADMIN_EMAIL/PASSWORD ausentes na Vercel."}
         
         try:
             auth_admin.create_user_admin(email, password, {"full_name": "Dev Master"})
@@ -108,14 +108,14 @@ async def bootstrap_admin(token: str):
         profiles = supabase.table("perfis").select("id").eq("email", email).execute()
         if len(profiles.data) > 0:
             supabase.table("perfis").update(prof_data).eq("id", profiles.data[0]["id"]).execute()
-            return {"status": "success", "message": "Resgate concluído."}
-        return {"status": "partial", "message": "Usuário Auth criado. Logue para ativar perfil."}
+            return {"status": "success", "message": "Resgate concluido."}
+        return {"status": "partial", "message": "Usuario Auth criado. Logue para ativar perfil."}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 @app.get("/")
 async def root():
-    """Redireciona o acesso da raiz para a página inicial do frontend"""
+    """Redireciona o acesso da raiz para a pagina inicial do frontend"""
     return RedirectResponse(url="/index.html")
 
 import traceback
