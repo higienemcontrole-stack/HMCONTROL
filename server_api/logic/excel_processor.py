@@ -170,4 +170,3 @@ class ExcelProcessor:
         ).fillna(0)
         
         return pivot.reset_index().to_dict(orient='records')
-       return pivot.reset_index().to_dict(orient='records')
