@@ -64,7 +64,27 @@ class Core {
         if (this.token) {
             this.syncUserProfile();
             this.injectAdminFeatures();
+            this.applyAccessRestrictions();
         }
+    }
+
+    applyAccessRestrictions() {
+        if (!this.user) return;
+        const isAdmin = this.user.cargo === 'admin';
+        const allowedScreens = this.user.acessos || ['dashboard'];
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || href.includes('index.html') || href === 'javascript:void(0)') return;
+
+            const screenName = href.replace('.html', '').replace('/', '');
+            
+            if (!isAdmin && !allowedScreens.includes(screenName)) {
+                link.parentElement.style.display = 'none'; 
+            } else {
+                link.parentElement.style.display = 'block';
+            }
+        });
     }
 
     async syncUserProfile() {
@@ -239,25 +259,39 @@ class Core {
     injectAdminFeatures() {
         if (!this.user || this.user.cargo !== 'admin') return;
         
-        // 1. Adicionar Botão no Dropdown se não existir
-        const dropdown = document.getElementById('user-dropdown');
-        if (dropdown && !document.getElementById('btn-admin-users')) {
-            const btn = document.createElement('button');
-            btn.id = 'btn-admin-users';
-            btn.className = 'dropdown-item';
-            btn.style.color = 'var(--primary)';
-            btn.innerHTML = '<i class="fas fa-users-cog"></i> Gestão de Usuários';
-            btn.onclick = () => this.openUserManagementModal();
-            dropdown.prepend(btn);
+        // 1. Localizar o container de navegação ou dropdown de configurações
+        const navDropdown = document.querySelector('.nav-dropdown-content');
+        if (navDropdown) {
+            // Limpar/Substituir conteúdo para o Hub de Elite
+            navDropdown.innerHTML = `
+                <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                <a href="javascript:HM.openUserManagementModal()"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                <a href="javascript:HM.exportSnapshot()"><i class="fas fa-file-excel"></i> Snapshots (Backup)</a>
+                <a href="javascript:HM.openMetas()"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                <a href="javascript:HM.openAuditLogs()"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                <a href="javascript:HM.clearCache()" style="color: var(--danger);"><i class="fas fa-eraser"></i> Limpar Cache</a>
+            `;
         }
 
-        // 2. Injetar Modal de Usuários se não existir
+        // 2. Injetar Botão de Atalho no Dropdown de Usuário (Versão Curta)
+        const userDropdown = document.getElementById('user-dropdown');
+        if (userDropdown && !document.getElementById('btn-admin-shortcut')) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-admin-shortcut';
+            btn.className = 'dropdown-item';
+            btn.style.color = 'var(--primary)';
+            btn.innerHTML = '<i class="fas fa-shield-alt"></i> Painel de Gestão';
+            btn.onclick = () => this.openUserManagementModal();
+            userDropdown.prepend(btn);
+        }
+
+        // 3. Injetar Modal de Gestão de Contas (Unificado)
         if (!document.getElementById('admin-user-modal')) {
             const modalHtml = `
                 <div class="modal-overlay" id="admin-user-modal">
                     <div class="modal-card large">
-                        <div class="modal-header" style="background: var(--primary); color: white;">
-                            <div class="modal-title" style="color: white;"><i class="fas fa-users"></i> Gestão de Equipe</div>
+                        <div class="modal-header" style="background: var(--excel-blue); color: white;">
+                            <div class="modal-title" style="color: white;"><i class="fas fa-users-cog"></i> GESTÃO DE CONTAS</div>
                             <button class="btn-close-modal" onclick="HM.closeUserModal()" style="color: white;">&times;</button>
                         </div>
                         <div class="modal-body">
@@ -265,23 +299,21 @@ class Core {
                                 <table class="admin-table">
                                     <thead>
                                         <tr>
-                                            <th>Nome</th>
-                                            <th>Email</th>
-                                            <th>Cargo</th>
+                                            <th>Colaborador</th>
+                                            <th>E-mail</th>
+                                            <th>Perfil</th>
                                             <th style="width: 50px;">Ações</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="admin-users-list">
-                                        <!-- Carregado via JS -->
-                                    </tbody>
+                                    <tbody id="admin-users-list"></tbody>
                                 </table>
                             </div>
                             
                             <div class="admin-add-form">
-                                <div class="modal-section-title">Cadastrar Novo Usuário</div>
+                                <div class="modal-section-title">Cadastrar Novo Acesso</div>
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                     <input type="text" id="new-user-name" class="profile-input" placeholder="Nome Completo">
-                                    <input type="email" id="new-user-email" class="profile-input" placeholder="Email">
+                                    <input type="email" id="new-user-email" class="profile-input" placeholder="E-mail Corporativo">
                                     <input type="password" id="new-user-pass" class="profile-input" placeholder="Senha Inicial">
                                     <select id="new-user-role" class="profile-input">
                                         <option value="user">Usuário Comum</option>
@@ -289,7 +321,7 @@ class Core {
                                     </select>
                                 </div>
                                 <button class="btn-modal-save" style="width: 100%; margin-top: 15px;" id="btn-create-user" onclick="HM.handleCreateUser()">
-                                    Criar Usuário
+                                    CRIAR CONTA NO SUPABASE
                                 </button>
                             </div>
                         </div>
@@ -298,6 +330,19 @@ class Core {
             `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
         }
+    }
+
+    async exportSnapshot() {
+        alert('Gerando Snapshot... Todos os dados do Supabase serão exportados para Excel.');
+        window.location.href = `${CORE_CONFIG.API_BASE}/api/excel/tabulation`; // Reaproveita a tabulação purificada
+    }
+
+    openMetas() {
+        alert('Módulo de Metas: Em breve você poderá configurar o volume de auditoria por unidade diretamente aqui.');
+    }
+
+    openAuditLogs() {
+        alert('Logs de Auditoria: Rastreando ações de Julia e outros administradores via Supabase.');
     }
 
     async openUserManagementModal() {

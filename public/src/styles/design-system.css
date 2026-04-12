@@ -89,7 +89,7 @@
 }
 
 .slicer-box.collapsed .slicer-list {
-    display: none;
+    display: none !important;
 }
 
 .toggle-icon {
@@ -98,7 +98,7 @@
 }
 
 .slicer-box.collapsed .toggle-icon {
-    transform: rotate(-180deg);
+    transform: none; /* Usaremos troca de classe de ícone em vez de rotação pura para clareza */
 }
 
 .slicer-list {

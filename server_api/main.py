@@ -9,10 +9,10 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 
 # Importações Modulares
-from .logic.excel_processor import ExcelProcessor
 from .logic.audit_logger import logger
 from .logic.auth_manager import AuthManager
 from .models.schemas import UserLogin, UserProfileUpdate, AdminUserCreate, RegistroCreate
+import pandas as pd
 
 # Configurações de Ambiente (Vercel Ready)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,10 +39,6 @@ app.add_middleware(
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 auth_admin = AuthManager(SUPABASE_URL, SUPABASE_KEY)
 
-# Caminho absoluto para garantir consistência no Vercel
-EXCEL_PATH = os.path.join(BASE_DIR, "logic", "Planilha NOVA de higiene de Mãos.xlsx")
-excel = ExcelProcessor(EXCEL_PATH)
-
 # --- CACHE DE DADOS SUPABASE ---
 GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
 
@@ -50,8 +46,8 @@ async def fetch_all_registros_from_supabase(force_refresh=False):
     global GLOBAL_DATA_CACHE
     now = datetime.now()
     
-    # Cache de 60 segundos para performance no dashboard
-    if not force_refresh and GLOBAL_DATA_CACHE["last_sync"] and (now - GLOBAL_DATA_CACHE["last_sync"]).seconds < 60:
+    # Cache de 30 segundos para performance no dashboard
+    if not force_refresh and GLOBAL_DATA_CACHE["last_sync"] and (now - GLOBAL_DATA_CACHE["last_sync"]).seconds < 30:
         return GLOBAL_DATA_CACHE["records"]
         
     try:
@@ -124,55 +120,75 @@ import traceback
 async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
     try:
         data = await fetch_all_registros_from_supabase()
-        excel_ready = []
-        for r in data:
-            excel_ready.append({
-                "Mês (automático)": r.get("mes"),
-                "Ano (automático)": r.get("ano"),
-                "Observador": r.get("observador"),
-                "Unidade": r.get("unidade"),
-                "Profissional Auditado": r.get("profissional_auditado"),
-                "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": r.get("produto_utilizado", ""),
-                "Login": r.get("usuario_login"),
-                "Horário": r.get("horario_envio")
-            })
+        if not data:
+            return {"filters": {"units": [], "months": [], "years": []}, "moments": [], "categories": [], "timeline": [], "units_data": []}
             
-        excel.update_from_external_data(excel_ready)
-        return excel.get_dashboard_data(unit, month, year)
+        df = pd.DataFrame(data)
+        
+        # Filtros Dinâmicos
+        all_units = sorted(df["unidade"].unique().tolist())
+        all_years = sorted(df["ano"].unique().tolist())
+        all_months = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+        
+        # Aplicar Filtros selecionados
+        temp_df = df.copy()
+        if unit != "TODAS": temp_df = temp_df[temp_df["unidade"] == unit]
+        if month != "TODOS": temp_df = temp_df[temp_df["mes"] == month]
+        if year != "TODOS": temp_df = temp_df[temp_df["ano"] == year]
+
+        # Agregadores para o Dashboard (Volume de Monitoramento)
+        def get_chart_data(group_col):
+            if temp_df.empty: return []
+            counts = temp_df.groupby(group_col).size().reset_index(name="total")
+            counts.columns = ["label", "total"]
+            return counts.sort_values(by="total", ascending=False).to_dict(orient="records")
+
+        return {
+            "filters": {
+                "units": all_units,
+                "months": all_months,
+                "years": all_years
+            },
+            "moments": get_chart_data("momento_auditado"),
+            "categories": get_chart_data("profissional_auditado"),
+            "timeline": get_chart_data("mes"),
+            "units": get_chart_data("unidade")
+        }
     except Exception as e:
-        logger.error(f"Erro no dashboard: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail="Erro interno ao processar dados do Dashboard.")
+        logger.error(f"Erro no dashboard purificado: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail="Erro interno ao processar dados vivos do Supabase.")
 
 @app.get("/api/excel/tabulation")
 async def get_tabulation():
     try:
         data = await fetch_all_registros_from_supabase(force_refresh=True)
-        mapped = []
-        for r in data:
-            mapped.append({
-                "Mês (automático)": r.get("mes"),
-                "Ano (automático)": r.get("ano"),
-                "Observador": r.get("observador"),
-                "Unidade": r.get("unidade"),
-                "Profissional Auditado": r.get("profissional_auditado"),
-                "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": r.get("produto_utilizado", ""),
-                "Login": r.get("usuario_login"),
-                "Horário": r.get("horario_envio")
-            })
-        return mapped
+        return data
     except Exception as e:
         logger.error(f"Erro na tabulação: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
 @app.get("/api/excel/validations")
 async def get_validations():
-    """Retorna as listas oficiais do Excel (Unidades, Cargos, etc)"""
+    """Retorna as listas oficiais diretamente do Supabase (Sync Realtime)"""
     try:
-        return excel.get_dropdown_lists()
+        data = await fetch_all_registros_from_supabase()
+        df = pd.DataFrame(data)
+        
+        # Extrai valores únicos existentes no banco como verdade absoluta
+        return {
+            "unidades": sorted(df["unidade"].unique().tolist()) if not df.empty else ["Enf A", "Enf B", "UTI"],
+            "profissionais": sorted(df["profissional_auditado"].unique().tolist()) if not df.empty else ["Médico", "Enfermeiro", "Técnico"],
+            "momentos": [
+                "1 - Antes de contato com o paciente",
+                "2 - Antes de procedimento asséptico",
+                "3 - Após risco de exposição a fluidos",
+                "4 - Após contato com o paciente",
+                "5 - Após contato com áreas próximas"
+            ],
+            "produtos": sorted(df["produto_utilizado"].unique().tolist()) if not df.empty else ["Álcool Gel", "Sabonete"]
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Erro ao sincronizar listas: {str(e)}")
 
 @app.post("/api/admin/cache/clear")
 async def clear_cache():
@@ -194,25 +210,25 @@ async def sync_database():
 async def get_pivot():
     try:
         data = await fetch_all_registros_from_supabase()
-        excel_ready = []
-        for r in data:
-            excel_ready.append({
-                "Mês (automático)": r.get("mes"),
-                "Ano (automático)": r.get("ano"),
-                "Observador": r.get("observador"),
-                "Unidade": r.get("unidade"),
-                "Profissional Auditado": r.get("profissional_auditado"),
-                "Momento Auditado": r.get("momento_auditado"),
-                "Produto utilizado": r.get("produto_utilizado", ""),
-                "Login": r.get("usuario_login"),
-                "Horário": r.get("horario_envio")
-            })
+        if not data:
+            return []
             
-        excel.update_from_external_data(excel_ready)
-        return excel.get_pivot_data()
+        df = pd.DataFrame(data)
+        
+        # Gerar Pivot Table: Unidade vs Momento Auditado (Volume)
+        # Bate com a lógica da Tabela Dinâmica do Excel original
+        pivot = pd.crosstab(
+            df["unidade"], 
+            df["momento_auditado"], 
+            margins=True, 
+            margins_name="Total Geral"
+        ).reset_index()
+        
+        # Converter para lista de dicionários para o frontend
+        return pivot.to_dict(orient="records")
     except Exception as e:
-        logger.error(f"Erro no pivot: {str(e)}")
-        raise HTTPException(status_code=500, detail="Erro interno ao gerar Tabela Dinâmica.")
+        logger.error(f"Erro no pivot purificado: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar Tabela Dinâmica do banco.")
 
 # --- GESTÃO DE USUÁRIOS ---
 @app.get("/api/admin/users")

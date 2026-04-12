@@ -168,8 +168,41 @@ function createGroupedBar(canvasId, items, colors, showMeta, metaValue = 85, cur
     return new Chart(document.getElementById(canvasId), config);
 }
 
-// Função para expandir/recolher slicers (Fidelidade UI solicitada)
+// Função para expandir/recolher slicers (Fidelidade UI e Reconhecimento da Janela)
+window.toggleSlicer = function(header) {
+    const box = header.parentElement;
+    const isCollapsed = box.classList.toggle('collapsed');
+    
+    // Alternar ícone para feedback visual claro de "reconhecimento"
+    const icon = header.querySelector('.toggle-icon');
+    if (icon) {
+        if (isCollapsed) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-up'); // Correção: para baixo é o padrão
+            // Na verdade, no print do usuário: Seta para CIMA = Expandido ou Fechado?
+            // "os dois campo circulados em vermelho quando preciono a seta para cima a janela não reconhe"
+            // Se ele pressiona a seta para cima e não reconhece, significa que ele quer que feche.
+            // Logo, fechar = seta para cima. Abrir = seta para baixo.
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    }
+}
+
+// Re-implementação simplificada para lógica robusta de troca de ícones
 window.toggleSlicer = function(header) {
     const box = header.parentElement;
     box.classList.toggle('collapsed');
+    
+    const icon = header.querySelector('.toggle-icon');
+    if (icon) {
+        if (box.classList.contains('collapsed')) {
+            icon.className = 'fas fa-chevron-up toggle-icon'; // Feedback de fechado
+        } else {
+            icon.className = 'fas fa-chevron-down toggle-icon'; // Feedback de aberto
+        }
+    }
 }
