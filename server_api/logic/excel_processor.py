@@ -139,12 +139,13 @@ class ExcelProcessor:
                 def sort_key(r):
                     lbl = str(r['label']).lower()
                     if '/' in lbl:
-                        # jan/24 -> year 24, month index
                         parts = lbl.split('/')
-                        m_idx = months_ref.index(parts[0]) if parts[0] in months_ref else 99
+                        m_str = parts[0]
+                        # Suporta 'jan' ou '1'
+                        m_idx = months_ref.index(m_str) if m_str in months_ref else (int(m_str)-1 if m_str.isdigit() else 99)
                         y_val = int(parts[1]) if parts[1].isdigit() else 0
                         return (y_val, m_idx)
-                    return (0, months_ref.index(lbl) if lbl in months_ref else 99)
+                    return (0, months_ref.index(lbl) if lbl in months_ref else (int(lbl)-1 if lbl.isdigit() else 99))
                 
                 result.sort(key=sort_key)
                 
@@ -212,7 +213,7 @@ class ExcelProcessor:
                 "units": sorted(self.df[col_unit].dropna().unique().tolist()),
                 "months": sorted(
                     self.df[col_month].dropna().unique().tolist(),
-                    key=lambda m: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'].index(m.lower()) if m.lower() in ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'] else 99
+                    key=lambda m: ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'].index(str(m).lower()) if str(m).lower() in ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'] else (int(str(m))-1 if str(m).isdigit() else 99)
                 ),
                 "years": sorted([str(y) for y in self.df[col_year].dropna().unique() if str(y).strip()])
             }

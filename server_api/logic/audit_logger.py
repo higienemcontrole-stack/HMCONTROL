@@ -65,5 +65,8 @@ class AuditLogger:
         message = f"Context: {context} | Error: {error}"
         self.error_logger.error(message)
 
+    def error(self, message: str):
+        self.error_logger.error(message)
+
 # Instância global
 logger = AuditLogger()
