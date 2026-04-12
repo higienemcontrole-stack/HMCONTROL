@@ -84,9 +84,12 @@ async def bootstrap_admin(token: str):
         raise HTTPException(status_code=403, detail="Acesso Proibido: Token Inválido")
 
     try:
-        # Puxa as credenciais seguras do ambiente ou usa o padrão restrito
-        email = os.environ.get("ADMIN_EMAIL", "dev_master@serialaudit.com")
-        password = os.environ.get("ADMIN_PASSWORD", "HM_Control_2026!#")
+        # Credenciais são obrigatórias via variáveis de ambiente da Vercel
+        email = os.environ.get("ADMIN_EMAIL")
+        password = os.environ.get("ADMIN_PASSWORD")
+        
+        if not email or not password:
+            return {"status": "error", "message": "ADMIN_EMAIL ou ADMIN_PASSWORD não configurados na Vercel."}
         
         try:
             auth_admin.create_user_admin(email, password, {"full_name": "Dev Master"})
