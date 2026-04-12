@@ -242,7 +242,9 @@ async def delete_user(user_id: str):
     return {"status": "success"}
 
 @app.get("/api/user/profile")
-async def get_profile(user_id: str = Header(...)):
+async def get_profile(user_id: str = None):
+    if not user_id:
+        raise HTTPException(status_code=400, detail="ID de usuário não fornecido.")
     profile = supabase.table("perfis").select("*").eq("id", user_id).single().execute()
     return profile.data
 

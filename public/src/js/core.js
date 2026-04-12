@@ -68,13 +68,17 @@ class Core {
     }
 
     async syncUserProfile() {
+        if (!this.user || !this.user.id) return;
         try {
-            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile`, {
+            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${this.user.id}`, {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
             if (res.ok) {
                 const profile = await res.json();
-                if (this.elements.displayName) this.elements.displayName.textContent = profile.nome_completo;
+                if (this.elements.displayName) {
+                    const name = profile.nome_completo || profile.email.split('@')[0];
+                    this.elements.displayName.textContent = name;
+                }
                 this.user = { ...this.user, ...profile };
                 localStorage.setItem('hm_user', JSON.stringify(this.user));
             }
@@ -117,16 +121,17 @@ class Core {
     }
 
     async openProfileModal() {
+        if (!this.user || !this.user.id) return;
         const modal = document.getElementById('profile-modal');
         if (!modal) return;
 
         try {
-            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile`, {
+            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${this.user.id}`, {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
             const profile = await res.json();
 
-            // Atribuição de Valores
+            // Atribuição de Valores (População Real do Supabase)
             document.getElementById('profile-name').value = profile.nome_completo || '';
             document.getElementById('profile-email').value = profile.email || '';
             document.getElementById('profile-password').value = ''; 
