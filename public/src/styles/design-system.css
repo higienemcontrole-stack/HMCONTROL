@@ -136,20 +136,27 @@
     padding: 15px 20px 25px;
     border-radius: 4px;
     box-shadow: var(--shadow-sm);
-    height: 480px; /* Estabilizado: espaço amplo e fixo para evitar estiramento */
-    display: grid;
-    grid-template-rows: auto 1fr; /* Título no topo, gráfico ocupando o resto */
-    overflow: hidden; /* Segurança contra vazamentos */
+    height: 450px; /* Altura firme para Desktop */
+    display: flex; /* Mudança para Flex para melhor controle do container interno */
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0; /* Vital para estabilizar o CSS Grid */
 }
 
-.chart-card-excel.wide { grid-column: span 2; }
-.chart-card-excel.large { grid-column: span 1; height: 480px; }
+.chart-container {
+    position: relative;
+    flex-grow: 1;
+    min-height: 0; /* Impede que o canvas estique o card infinitamente */
+    width: 100%;
+}
+
+.chart-card-excel.wide { grid-column: span 2; height: 450px; }
+.chart-card-excel.large { grid-column: span 1; height: 450px; }
 
 @media (max-width: 1024px) {
     .chart-card-excel.wide, .chart-card-excel.large {
         grid-column: span 1;
-        height: auto;
-        min-height: 350px;
+        height: 350px; /* Altura ideal para celulares */
     }
 }
 

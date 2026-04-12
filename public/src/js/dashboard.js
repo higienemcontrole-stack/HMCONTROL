@@ -152,9 +152,10 @@ function createGroupedBar(canvasId, items, colors, showMeta, metaValue = 85, cur
                 x: {
                     stacked: isComparison, // Ativa empilhamento apenas no modo comparação
                     ticks: {
-                        maxRotation: 45,
+                        maxRotation: 90,
                         minRotation: 0,
-                        font: { size: 10 }
+                        autoSkip: true,
+                        font: { size: window.innerWidth < 1024 ? 9 : 10 }
                     }
                 },
                 y: { 
@@ -162,6 +163,7 @@ function createGroupedBar(canvasId, items, colors, showMeta, metaValue = 85, cur
                     beginAtZero: true,
                     max: showMeta ? 100 : undefined,
                     ticks: {
+                        font: { size: 10 },
                         callback: function(value) { return value + (showMeta ? '%' : ''); }
                     }
                 }
