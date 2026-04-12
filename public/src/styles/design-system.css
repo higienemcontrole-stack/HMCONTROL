@@ -472,9 +472,10 @@ body {
     display: none;
     flex-direction: column;
     padding: 8px 0;
-    z-index: 2000;
+    z-index: 9999;
     border: 1px solid var(--border);
     animation: fadeInDown 0.2s ease-out;
+    overflow: visible;
 }
 
 .dropdown-menu.active {
@@ -1151,4 +1152,66 @@ body {
     font-size: 11px;
     color: #94a3b8;
     line-height: 1.6;
+}
+/* --- ADMIN MANAGEMENT SYSTEM (v3.8) --- */
+.admin-table-container {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.admin-table th {
+    background: #f8fafc;
+    padding: 10px;
+    text-align: left;
+    font-weight: 700;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+}
+
+.admin-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+.role-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.role-badge.admin { background: #fee2e2; color: #dc2626; }
+.role-badge.user { background: #dcfce7; color: #16a34a; }
+
+.btn-admin-delete {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+.btn-admin-delete:hover { color: #b91c1c; transform: scale(1.2); }
+
+.admin-add-form {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+}
+
+.modal-card.large {
+    max-width: 700px;
 }

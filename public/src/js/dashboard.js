@@ -26,11 +26,11 @@ async function initDashboard(unit = 'TODAS', month = 'TODOS', year = 'TODOS') {
 
         // Mapeamento de Títulos Originais + Sufixo do Ano
         const titleMappings = {
-            'title-moments-main': 'ADESÃO AOS 5 MOMENTOS DE HIGIENE DE MÃOS',
-            'title-moments-stacked': 'ADESÃO POR MOMENTO AUDITADO',
-            'title-categories': 'ADESÃO POR CATEGORIA PROFISSIONAL',
-            'title-realized-lost': 'OPORTUNIDADES REALIZADAS X PERDIDAS',
-            'title-units': 'ADESÃO POR UNIDADE'
+            'title-moments-main': 'MONITORAMENTO DOS 5 MOMENTOS',
+            'title-moments-stacked': 'QUANTIDADE POR MOMENTO AUDITADO',
+            'title-categories': 'MONITORAMENTO POR CATEGORIA PROFISSIONAL',
+            'title-realized-lost': 'VOLUME DE MONITORAMENTOS MENSAL',
+            'title-units': 'MONITORAMENTO POR UNIDADE'
         };
 
         // Aplicar a todos os elementos encontrados
@@ -108,63 +108,49 @@ function renderCharts(data, currentYear) {
 
 function createGroupedBar(canvasId, items, colors, showMeta, metaValue = 85, currentYear = 'TODOS') {
     const labels = items.map(i => i.label);
-    const isComparison = currentYear === 'TODOS';
-    
-    // Calcular porcentagens para as barras (Fidelidade Excel)
-    const sims = items.map(i => showMeta ? (i.sim / i.total * 100) : i.sim);
-    const naos = items.map(i => showMeta ? (i.nao / i.total * 100) : i.nao);
+    const values = items.map(i => i.total);
 
     const config = {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [
-                { label: 'Não', data: naos, backgroundColor: colors.nao, borderRadius: 2 },
-                { label: 'Sim', data: sims, backgroundColor: colors.sim, borderRadius: 2 }
+                { 
+                    label: 'Quantidade', 
+                    data: values, 
+                    backgroundColor: '#3B82F6', 
+                    borderRadius: 4,
+                    borderWidth: 0
+                }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            layout: {
-                padding: {
-                    bottom: 40
-                }
-            },
             plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
-                annotation: showMeta ? {
-                    annotations: {
-                        line1: {
-                            type: 'line',
-                            yMin: metaValue,
-                            yMax: metaValue,
-                            borderColor: '#1F3864',
-                            borderWidth: 3,
-                            label: {
-                                display: false
-                            }
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Total: ${context.parsed.y} monitoramentos`;
                         }
                     }
-                } : {}
+                }
             },
             scales: {
                 x: {
-                    stacked: isComparison, // Ativa empilhamento apenas no modo comparação
                     ticks: {
-                        maxRotation: 90,
+                        maxRotation: 45,
                         minRotation: 0,
                         autoSkip: true,
-                        font: { size: window.innerWidth < 1024 ? 9 : 10 }
+                        font: { size: 10 }
                     }
                 },
                 y: { 
-                    stacked: isComparison, // Ativa empilhamento apenas no modo comparação
                     beginAtZero: true,
-                    max: showMeta ? 100 : undefined,
                     ticks: {
                         font: { size: 10 },
-                        callback: function(value) { return value + (showMeta ? '%' : ''); }
+                        precision: 0
                     }
                 }
             }

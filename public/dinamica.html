@@ -159,18 +159,11 @@
                     let val = row[h];
                     let className = '';
                     
-                    if (h.includes('CATEGORIA') || h.includes('MOMENTO') || h === 'index') className = 'row-label';
-                    if (val === 'Total' || row['CATEGORIA'] === 'Total' || row['index'] === 'Total') className = 'total-cell';
-                    if (h === '% Adesão') {
-                        className = 'percentage-cell';
-                        const num = parseFloat(val);
-                        if (num >= 80) className += ' high';
-                        if (num < 50) className += ' low';
-                        val = val + '%';
-                    }
+                    if (h.includes('CATEGORIA') || h.includes('MOMENTO') || h === 'index' || h === 'Profissional Auditado') className = 'row-label';
+                    if (val === 'Total' || row['CATEGORIA'] === 'Total' || row['index'] === 'Total' || row['Profissional Auditado'] === 'Total') className = 'total-cell';
                     
                     html += `<td class="${className}">${val}</td>`;
-                });
+                 });
                 html += '</tr>';
             });
 

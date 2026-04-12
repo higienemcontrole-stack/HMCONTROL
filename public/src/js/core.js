@@ -63,6 +63,7 @@ class Core {
 
         if (this.token) {
             this.syncUserProfile();
+            this.injectAdminFeatures();
         }
     }
 
@@ -226,6 +227,140 @@ class Core {
                 errorEl.style.display = 'block';
             }
         } finally { btn.disabled = false; }
+    }
+
+    // --- ADMIN MANAGEMENT (v3.8) ---
+    
+    injectAdminFeatures() {
+        if (!this.user || this.user.cargo !== 'admin') return;
+        
+        // 1. Adicionar Botão no Dropdown se não existir
+        const dropdown = document.getElementById('user-dropdown');
+        if (dropdown && !document.getElementById('btn-admin-users')) {
+            const btn = document.createElement('button');
+            btn.id = 'btn-admin-users';
+            btn.className = 'dropdown-item';
+            btn.style.color = 'var(--primary)';
+            btn.innerHTML = '<i class="fas fa-users-cog"></i> Gestão de Usuários';
+            btn.onclick = () => this.openUserManagementModal();
+            dropdown.prepend(btn);
+        }
+
+        // 2. Injetar Modal de Usuários se não existir
+        if (!document.getElementById('admin-user-modal')) {
+            const modalHtml = `
+                <div class="modal-overlay" id="admin-user-modal">
+                    <div class="modal-card large">
+                        <div class="modal-header" style="background: var(--primary); color: white;">
+                            <div class="modal-title" style="color: white;"><i class="fas fa-users"></i> Gestão de Equipe</div>
+                            <button class="btn-close-modal" onclick="HM.closeUserModal()" style="color: white;">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="admin-table-container">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>Cargo</th>
+                                            <th style="width: 50px;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-users-list">
+                                        <!-- Carregado via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="admin-add-form">
+                                <div class="modal-section-title">Cadastrar Novo Usuário</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <input type="text" id="new-user-name" class="profile-input" placeholder="Nome Completo">
+                                    <input type="email" id="new-user-email" class="profile-input" placeholder="Email">
+                                    <input type="password" id="new-user-pass" class="profile-input" placeholder="Senha Inicial">
+                                    <select id="new-user-role" class="profile-input">
+                                        <option value="user">Usuário Comum</option>
+                                        <option value="admin">Administrador</option>
+                                    </select>
+                                </div>
+                                <button class="btn-modal-save" style="width: 100%; margin-top: 15px;" id="btn-create-user" onclick="HM.handleCreateUser()">
+                                    Criar Usuário
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+    }
+
+    async openUserManagementModal() {
+        const modal = document.getElementById('admin-user-modal');
+        if (modal) {
+            modal.classList.add('active');
+            this.loadUsersList();
+        }
+    }
+
+    closeUserModal() {
+        const modal = document.getElementById('admin-user-modal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    async loadUsersList() {
+        const list = document.getElementById('admin-users-list');
+        list.innerHTML = '<tr><td colspan="4" style="text-align:center;">Carregando...</td></tr>';
+        
+        try {
+            const users = await apiService.getAdminUsers();
+            list.innerHTML = '';
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${u.nome_completo || 'Sem Nome'}</td>
+                    <td>${u.email}</td>
+                    <td><span class="role-badge ${u.cargo}">${u.cargo}</span></td>
+                    <td style="text-align:center;">
+                        ${u.id === this.user.id ? '' : `<button class="btn-admin-delete" onclick="HM.deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>`}
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
+        } catch (e) { list.innerHTML = '<tr><td colspan="4">Erro ao carregar lista.</td></tr>'; }
+    }
+
+    async handleCreateUser() {
+        const btn = document.getElementById('btn-create-user');
+        const payload = {
+            nome_completo: document.getElementById('new-user-name').value,
+            email: document.getElementById('new-user-email').value,
+            password: document.getElementById('new-user-pass').value,
+            cargo: document.getElementById('new-user-role').value
+        };
+
+        if (!payload.email || !payload.password) return alert('Email e Senha são obrigatórios.');
+
+        try {
+            btn.disabled = true;
+            await apiService.createAdminUser(payload);
+            alert('Usuário criado com sucesso!');
+            this.loadUsersList();
+            // Reset form
+            document.getElementById('new-user-name').value = '';
+            document.getElementById('new-user-email').value = '';
+            document.getElementById('new-user-pass').value = '';
+        } catch (e) { alert('Erro: ' + e.message); }
+        finally { btn.disabled = false; }
+    }
+
+    async deleteUser(userId) {
+        if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+        try {
+            await apiService.deleteAdminUser(userId);
+            alert('Usuário excluído!');
+            this.loadUsersList();
+        } catch (e) { alert('Erro ao excluir.'); }
     }
 
     async syncDatabase() {
