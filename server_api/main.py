@@ -116,18 +116,26 @@ async def bootstrap_admin(token: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@app.get("/api/debug/health")
-async def debug_health():
+@app.get("/api/debug/policies")
+async def debug_policies():
     try:
-        profiles = supabase.table("perfis").select("email").execute()
-        return {
-            "status": "connected",
-            "project_url": SUPABASE_URL,
-            "profiles_count": len(profiles.data),
-            "registered_emails": [p['email'] for p in profiles.data]
-        }
+        # Consulta o catálogo do Postgres para encontrar todas as políticas na tabela perfis
+        query = """
+            SELECT policyname, cmd, roles, qual 
+            FROM pg_policies 
+            WHERE tablename = 'perfis';
+        """
+        # Usamos rpc ou uma query direta se o supabase-py permitir, 
+        # mas como queremos os nomes, vamos tentar via rpc ou retornamos erro instrucional
+        res = supabase.postgrest.rpc("get_policies_debug", {}).execute()
+        return {"policies": res.data}
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        # Se não houver a função RPC, retornamos uma instrução para o usuário criar a função de auditoria
+        return {
+            "status": "rpc_needed",
+            "message": "Para eu ver os nomes das regras, execute este SQL no Supabase:",
+            "sql": "CREATE OR REPLACE FUNCTION get_policies_debug() RETURNS TABLE(policyname text, cmd text, roles text[], qual text) LANGUAGE plpgsql SECURITY DEFINER AS $$ BEGIN RETURN QUERY SELECT p.policyname::text, p.cmd::text, p.roles::text[], p.qual::text FROM pg_policies p WHERE p.tablename = 'perfis'; END; $$;"
+        }
 
 @app.get("/api/admin/users")
 async def list_users():
