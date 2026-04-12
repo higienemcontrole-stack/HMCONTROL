@@ -142,7 +142,7 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
     except Exception as e:
         error_details = traceback.format_exc()
         logger.error(f"Erro no dashboard: {error_details}")
-        raise HTTPException(status_code=500, detail={"error": str(e), "traceback": error_details})
+        raise HTTPException(status_code=500, detail="Erro interno ao processar dados do Dashboard.")
 
 @app.get("/api/excel/tabulation")
 async def get_tabulation():
@@ -170,7 +170,7 @@ async def get_tabulation():
     except Exception as e:
         error_details = traceback.format_exc()
         logger.error(f"Erro na tabulação: {error_details}")
-        raise HTTPException(status_code=500, detail={"error": str(e), "traceback": error_details})
+        raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
 # --- GESTÃO DE USUÁRIOS ---
 @app.get("/api/admin/users")
@@ -209,7 +209,9 @@ async def get_profile(user_id: str = Header(...)):
 async def save_registro(reg: RegistroCreate):
     try:
         data_ref = reg.data_auditoria or str(datetime.now().date())
+        meses_map = {1:"jan",2:"fev",3:"mar",4:"abr",5:"mai",6:"jun",7:"jul",8:"ago",9:"set",10:"out",11:"nov",12:"dez"}
         dt = datetime.strptime(data_ref, "%Y-%m-%d")
+        mes_nome = meses_map.get(dt.month, "jan")
         
         payload = {
             "observador": reg.observador, 
@@ -220,7 +222,7 @@ async def save_registro(reg: RegistroCreate):
             "produto_utilizado": reg.produto_utilizado,
             "usuario_login": reg.usuario_login or "aplicativo",
             "data_auditoria": data_ref,
-            "mes": dt.month,
+            "mes": mes_nome,
             "ano": str(dt.year),
             "data_envio": str(datetime.now().date()),
             "horario_envio": datetime.now().strftime("%H:%M:%S")
