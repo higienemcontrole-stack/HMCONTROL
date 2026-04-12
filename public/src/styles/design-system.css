@@ -280,16 +280,18 @@ body {
     .nav-links {
         display: none; /* Esconde links padrão no mobile */
         position: fixed;
-        top: 60px;
+        top: 0;
         left: 0;
-        width: 100%;
-        height: calc(100vh - 60px);
-        background: var(--excel-blue);
+        width: 280px; /* Sidebar Compacta */
+        height: 100vh;
+        background: #003a8c; /* Azul Premium mais profundo */
         flex-direction: column;
-        padding: 20px;
+        padding: 60px 20px 20px; /* Padding superior para não cobrir o botão se estiver no z-index */
         z-index: 5000;
         gap: 0;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
         animation: slideInLeft 0.3s forwards;
+        border-right: 2px solid var(--excel-orange);
     }
     
     .nav-links.active {
@@ -297,15 +299,17 @@ body {
     }
     
     .nav-link {
-        height: 60px;
+        height: 55px;
         width: 100%;
         border-bottom: 1px solid rgba(255,255,255,0.1);
-        font-size: 14px;
-        padding: 0 15px;
+        font-size: 13px;
+        padding: 0 10px;
+        justify-content: flex-start;
     }
     
     .mobile-menu-btn {
         display: block;
+        z-index: 5001; /* Fica acima da sidebar se necessário */
     }
 }
 
