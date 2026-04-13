@@ -323,14 +323,18 @@ body.menu-open .menu-overlay {
     animation: fadeInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- DESIGN MASTER v6.0.0 (GLASSMORPHISM ESTABILIZADO) --- */
-.navbar-superior .nav-links .nav-dropdown .nav-dropdown-content a {
+/* --- DESIGN MASTER v6.1.0 (SIMPLIFICADO E ROBUSTO) --- */
+.nav-dropdown-content a, 
+.nav-dropdown-content a i {
+    color: #ffffff !important; /* FORÇANDO BRANCO ABSOLUTO EM QUALQUER LUGAR */
+}
+
+.nav-dropdown-content a {
     padding: 16px 25px !important;
-    color: #ffffff !important; /* BRANCO ABSOLUTO FORÇADO */
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     font-size: 14px !important;
-    font-weight: 700 !important; /* MAIOR PESO PARA CLAREZA */
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8) !important; /* CONTRASTE MESTRE */
+    font-weight: 700 !important;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.9) !important; /* CONTRASTE MESTRE */
     display: flex !important;
     align-items: center !important;
     gap: 15px !important;
@@ -520,7 +524,7 @@ body.menu-open .menu-overlay {
     padding: 10px 20px;
     font-size: 13px;
     font-weight: 500;
-    color: #475569;
+    color: #ffffff; /* Ajustado para branco (v6.1.0) para evitar conflitos */
     cursor: pointer;
     transition: 0.2s;
     display: flex;
