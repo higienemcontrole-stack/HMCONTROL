@@ -23,6 +23,7 @@
     --nav-sidebar-bg: #003a8c;
     --nav-glass-bg: rgba(0, 31, 77, 0.95);
     --nav-text: #ffffff;
+    --nav-text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
     --nav-text-muted: rgba(255, 255, 255, 0.7);
     --nav-accent: #ED7D31;
     --nav-shadow: 0 10px 40px rgba(0,0,0,0.5);
@@ -333,7 +334,8 @@ body {
 
 .nav-dropdown-content a {
     padding: 15px 25px !important;
-    color: var(--nav-text) !important; /* FORÇADO VIA VARIÁVEL v10 */
+    color: #ffffff !important; /* COR DIRETA FORÇADA */
+    text-shadow: var(--nav-text-shadow) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     font-size: 13.5px !important;
     font-weight: 700 !important;
@@ -341,6 +343,13 @@ body {
     align-items: center !important;
     gap: 12px !important;
     text-decoration: none !important;
+}
+
+/* Blindagem: garante que o texto herde o branco do link pai */
+.nav-dropdown-content a, 
+.nav-dropdown-content a span, 
+.nav-dropdown-content a div {
+    color: #ffffff !important;
 }
 
 .nav-dropdown-content a:hover {
