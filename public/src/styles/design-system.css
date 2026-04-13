@@ -245,7 +245,7 @@ body {
     height: 60px;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 100000 !important; /* Garantir que fique ACIMA do overlay (9998) */
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     border-bottom: 3px solid var(--excel-orange); /* Destaque sutil */
 }
