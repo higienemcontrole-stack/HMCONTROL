@@ -298,7 +298,7 @@ body {
         box-shadow: 10px 0 30px rgba(0,0,0,0.5);
         animation: slideInLeft 0.3s forwards;
         border-right: 2px solid var(--excel-orange);
-        overflow-y: auto;
+        overflow: visible !important; /* Vital para permitir Flyout Lateral */
     }
     
     .nav-links.active {
