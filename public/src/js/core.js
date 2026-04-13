@@ -10,7 +10,7 @@ class Core {
         this.token = localStorage.getItem('hm_token') || null;
         this.elements = {}; 
         
-        console.log('[Core] Sistema v5.1 Iniciado.');
+        console.log('[Core] Sistema v3.23.3 Iniciado.');
         this.observeDOM();
         
         if (document.readyState !== 'loading') {
@@ -140,7 +140,7 @@ class Core {
 
             // Toggle Dropdown via clique para Mobile/Tablet
             const settingsToggle = e.target.closest('.nav-dropdown > .nav-link');
-            if (settingsToggle && window.innerWidth <= 1024) {
+            if (settingsToggle) {
                 e.preventDefault();
                 e.stopPropagation();
                 const parent = settingsToggle.parentElement;
