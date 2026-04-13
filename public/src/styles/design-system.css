@@ -323,17 +323,19 @@ body.menu-open .menu-overlay {
     animation: fadeInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-dropdown-content a {
+/* SELETOR DE ALTA ESPECIFICIDADE PARA FORÇAR BRANCO v4.1.2 */
+.navbar-superior .nav-links .nav-dropdown .nav-dropdown-content a {
     padding: 16px 25px !important;
-    color: #ffffff !important; /* Texto sempre branco puro */
+    color: #ffffff !important; 
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     font-size: 14px !important;
-    font-weight: 500 !important;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    font-weight: 600 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important; /* Contraste extra */
     display: flex !important;
     align-items: center !important;
     gap: 15px !important;
     transition: 0.3s all;
+    text-decoration: none !important;
 }
 
 .nav-dropdown-content a i {
