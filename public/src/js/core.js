@@ -114,6 +114,14 @@ class Core {
                 if (!trigger.contains(e.target)) dropdown.classList.remove('active');
             }
 
+            // Dropdown de Configurações (Flyout v3.20)
+            const navDropdowns = document.querySelectorAll('.nav-dropdown');
+            navDropdowns.forEach(nd => {
+                if (nd.classList.contains('active') && !nd.contains(e.target)) {
+                    nd.classList.remove('active');
+                }
+            });
+
             // Menu Mobile (Responsivo)
             const navLinks = document.querySelector('.nav-links');
             const mobileTrigger = document.getElementById('mobile-menu-toggle');
@@ -121,6 +129,14 @@ class Core {
                 if (!mobileTrigger.contains(e.target) && !navLinks.contains(e.target)) {
                     navLinks.classList.remove('active');
                 }
+            }
+
+            // Toggle Dropdown via clique para Mobile/Tablet
+            const settingsToggle = e.target.closest('.nav-dropdown > .nav-link');
+            if (settingsToggle && window.innerWidth <= 1024) {
+                e.preventDefault();
+                e.stopPropagation();
+                settingsToggle.parentElement.classList.toggle('active');
             }
         });
     }
