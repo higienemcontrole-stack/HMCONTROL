@@ -1,4 +1,4 @@
-/* HM CONTROL - Core Orchestrator (v3.23.1 - Sidebar Hardened) */
+/* HM CONTROL - Core Orchestrator (v3.23.4 - Sidebar Refined) */
 
 const CORE_CONFIG = {
     API_BASE: window.location.origin
@@ -10,7 +10,7 @@ class Core {
         this.token = localStorage.getItem('hm_token') || null;
         this.elements = {}; 
         
-        console.log('[Core] Sistema v3.23.3 Iniciado.');
+        console.log('[Core] Sistema v3.23.4 Iniciado.');
         this.observeDOM();
         
         if (document.readyState !== 'loading') {
@@ -142,7 +142,8 @@ class Core {
             const settingsToggle = e.target.closest('.nav-dropdown > .nav-link');
             if (settingsToggle) {
                 e.preventDefault();
-                e.stopPropagation();
+                e.stopPropagation(); // CRITICAL: Impede que o clique "vaze" e feche a sidebar
+                
                 const parent = settingsToggle.parentElement;
                 const content = parent.querySelector('.nav-dropdown-content');
                 const rect = settingsToggle.getBoundingClientRect();
