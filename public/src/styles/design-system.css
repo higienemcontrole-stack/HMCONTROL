@@ -319,38 +319,52 @@ body {
         background: transparent !important;
     }
 
-    /* Ajuste Dropdown para Modo Acordeão na Sidebar */
+    /* Ajuste Dropdown para Modo Flyout Lateral (v3.20) */
     .nav-dropdown {
-        flex-direction: column;
-        align-items: flex-start;
-        height: auto !important;
+        position: relative !important;
         width: 100%;
     }
 
     .nav-dropdown-content {
-        position: static;
-        width: 100%;
-        background: rgba(0, 0, 0, 0.15);
-        box-shadow: none;
-        border: none;
-        padding: 0;
-        border-radius: 0;
+        position: absolute !important;
+        left: 280px !important; /* Abre exatamente após a sidebar */
+        top: 0 !important;
+        width: 240px !important;
+        background: white !important;
+        box-shadow: 10px 10px 40px rgba(0,0,0,0.3) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 0 12px 12px 0 !important;
+        padding: 5px 0 !important;
+        z-index: 6000 !important;
+        display: none;
+        flex-direction: column;
+        animation: fadeInRight 0.2s ease-out;
     }
 
-    .nav-dropdown:hover .nav-dropdown-content {
-        display: flex;
+    .nav-dropdown:hover .nav-dropdown-content,
+    .nav-dropdown.active .nav-dropdown-content {
+        display: flex !important;
     }
 
     .nav-dropdown-content a {
-        padding: 12px 15px 12px 40px; /* Indentação para sub-itens */
-        color: rgba(255, 255, 255, 0.8) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        height: auto;
+        padding: 12px 20px !important;
+        color: #334155 !important; /* Cor cinza escura para legibilidade no fundo branco */
+        border-bottom: 1px solid #f1f5f9 !important;
+        font-size: 13px !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        height: auto !important;
     }
 
     .nav-dropdown-content a:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white !important;
+        background: #f8fafc !important;
+        color: var(--primary) !important;
+    }
+
+    /* Animação para o menu lateral */
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(-10px); }
+        to { opacity: 1; transform: translateX(0); }
     }
     
     .mobile-menu-btn {
