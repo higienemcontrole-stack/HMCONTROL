@@ -79,10 +79,36 @@ async def fetch_all_registros_from_supabase(force_refresh=False):
 async def login(credentials: UserLogin):
     try:
         res = supabase.auth.sign_in_with_password({"email": credentials.email, "password": credentials.password})
-        profile = supabase.table("perfis").select("*").eq("id", res.user.id).single().execute()
-        return {"session": res.session, "user": res.user, "profile": profile.data}
+
+        # Buscar profile na tabela profiles (ou view perfis)
+        try:
+            profile_res = supabase.table("perfis").select("*").eq("id", res.user.id).single().execute()
+            profile = profile_res.data or {}
+        except Exception:
+            profile = {}
+
+        # Montar objeto user unificado com campos do profile
+        # O frontend salva este objeto inteiro no localStorage como 'hm_user'
+        user_obj = {
+            "id": res.user.id,
+            "email": res.user.email,
+            # Campos normalizados que o frontend (core.js) espera
+            "nome_completo": profile.get("nome_completo") or profile.get("full_name") or res.user.user_metadata.get("full_name", ""),
+            "cargo": profile.get("cargo") or profile.get("role") or "user",
+            "acessos": profile.get("acessos") or [],
+            "ativo": profile.get("ativo", True),
+            # Metadados extras
+            "created_at": str(res.user.created_at) if res.user.created_at else None,
+        }
+
+        return {
+            "session": res.session,
+            "user": user_obj,
+            "profile": profile
+        }
     except Exception as e:
         raise HTTPException(status_code=401, detail="Credenciais Inválidas")
+
 
 @app.get("/api/admin/bootstrap")
 async def bootstrap_admin(token: str):

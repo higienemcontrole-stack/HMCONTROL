@@ -55,10 +55,15 @@ class Core {
 
     refreshUI() {
         if (!this.user) return;
-        
+
+        // Normalizar campos: Supabase usa full_name/role; backend usa nome_completo/cargo
+        this.user.nome_completo = this.user.nome_completo || this.user.full_name || this.user.email?.split('@')[0] || '';
+        this.user.cargo         = this.user.cargo || this.user.role || 'user';
+        this.user.acessos       = this.user.acessos || [];
+        localStorage.setItem('hm_user', JSON.stringify(this.user));
+
         if (this.elements.displayName) {
-            const fallbackName = this.user.nome_completo || this.user.email.split('@')[0];
-            this.elements.displayName.textContent = fallbackName;
+            this.elements.displayName.textContent = this.user.nome_completo || this.user.email?.split('@')[0];
         }
 
         if (this.token) {
@@ -70,24 +75,27 @@ class Core {
 
     applyAccessRestrictions() {
         if (!this.user) return;
-        const isAdmin = this.user.cargo === 'admin';
-        const allowedScreens = this.user.acessos || ['dashboard'];
+        // Aceitar tanto 'cargo' (backend) como 'role' (Supabase direto)
+        const isAdmin = this.user.cargo === 'admin' || this.user.role === 'admin';
+        const allowedScreens = this.user.acessos || [];
+
+        // Admins nunca têm restrições
+        if (isAdmin) {
+            document.querySelectorAll('.nav-link').forEach(link => { link.style.display = ''; });
+            return;
+        }
 
         document.querySelectorAll('.nav-link').forEach(link => {
             const href = link.getAttribute('href');
-            // Ignorar links vitais ou abstratos
             if (!href || href.includes('index.html') || href.includes('javascript:void(0)')) return;
 
             const screenName = href.replace('.html', '').replace('/', '');
-            
-            // Determinar o elemento alvo para ocultação (o link em si ou o dropdown que o contém)
             const target = link.closest('.nav-dropdown') || link;
 
-            if (!isAdmin && !allowedScreens.includes(screenName)) {
-                target.style.display = 'none'; 
+            if (!allowedScreens.includes(screenName)) {
+                target.style.display = 'none';
             } else {
-                // Remove o override de display para permitir que o CSS original (Flex) assuma
-                target.style.display = ''; 
+                target.style.display = '';
             }
         });
     }
@@ -95,19 +103,48 @@ class Core {
     async syncUserProfile() {
         if (!this.user || !this.user.id) return;
         try {
+            // Tentar via API backend primeiro
             const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${this.user.id}`, {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
             if (res.ok) {
                 const profile = await res.json();
-                if (this.elements.displayName) {
-                    const name = profile.nome_completo || profile.email.split('@')[0];
-                    this.elements.displayName.textContent = name;
-                }
-                this.user = { ...this.user, ...profile };
-                localStorage.setItem('hm_user', JSON.stringify(this.user));
+                this._mergeProfile(profile);
+                return;
             }
-        } catch (err) { console.warn('[Core] Sync Profile Fail'); }
+        } catch (err) { /* ignora erro de rede */ }
+
+        // Fallback: ler direto da tabela profiles no Supabase
+        try {
+            const SUPA_URL = 'https://hmcontrol-legacy.supabase.co';
+            const SUPA_KEY = '[PURGED_ANON_KEY]';
+            const r = await fetch(
+                `${SUPA_URL}/rest/v1/profiles?id=eq.${this.user.id}&select=full_name,email,role,acessos,ativo`,
+                { headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${this.token}` } }
+            );
+            if (r.ok) {
+                const rows = await r.json();
+                if (rows && rows[0]) this._mergeProfile(rows[0]);
+            }
+        } catch (err) { console.warn('[Core] Sync Profile Fallback Fail', err); }
+    }
+
+    _mergeProfile(profile) {
+        // Normaliza e mescla os dados do profile no objeto user
+        const merged = {
+            ...this.user,
+            ...profile,
+            nome_completo: profile.nome_completo || profile.full_name || this.user.nome_completo || '',
+            cargo:         profile.cargo || profile.role || this.user.cargo || 'user',
+        };
+        this.user = merged;
+        localStorage.setItem('hm_user', JSON.stringify(this.user));
+        if (this.elements.displayName) {
+            this.elements.displayName.textContent = this.user.nome_completo || this.user.email?.split('@')[0] || '';
+        }
+        // Reaplicar restrições com dados frescos
+        this.injectAdminFeatures();
+        this.applyAccessRestrictions();
     }
 
     bindGlobalEvents() {
@@ -221,8 +258,7 @@ class Core {
     }
 
     manageAccounts() {
-        // Redireciona para perfil ou abre modal de usuários
-        const isAdmin = this.user && this.user.cargo === 'admin';
+        const isAdmin = this.user && (this.user.cargo === 'admin' || this.user.role === 'admin');
         if (isAdmin) {
             Swal.fire({
                 title: 'Gestão de Contas',
@@ -474,7 +510,8 @@ class Core {
     // --- ADMIN MANAGEMENT (v3.8) ---
     
     injectAdminFeatures() {
-        if (!this.user || this.user.cargo !== 'admin') return;
+        const isAdmin = this.user && (this.user.cargo === 'admin' || this.user.role === 'admin');
+        if (!isAdmin) return;
         
         // 1. Localizar o container de navegação ou dropdown de configurações
         const navDropdown = document.querySelector('.nav-dropdown-content');
