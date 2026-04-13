@@ -1,4 +1,4 @@
-/* HM CONTROL - Core Orchestrator (v3.23.8 - Navigation & Z-Index Corrected) */
+/* HM CONTROL - Core Orchestrator (v4.0.0 - Production Stabilized) */
 
 const CORE_CONFIG = {
     API_BASE: window.location.origin
@@ -10,7 +10,7 @@ class Core {
         this.token = localStorage.getItem('hm_token') || null;
         this.elements = {}; 
         
-        console.log('[Core] Sistema v3.23.8 Iniciado.');
+        console.log('[Core] Sistema v4.0.0 Iniciado.');
         this.observeDOM();
         
         if (document.readyState !== 'loading') {
