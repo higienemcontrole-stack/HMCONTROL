@@ -5,7 +5,7 @@
     /* Paleta de Cores Hospitalar */
     --primary: #2563EB;
     --primary-hover: #1D4ED8;
-    --bg-main: #E7F0FD; /* Azul Claro Suave Hospitalar */
+    --bg-main: #E7F0FD;
     --surface: #FFFFFF;
     --border: #ACB9CA;
     
@@ -13,11 +13,19 @@
     --excel-blue: #4472C4;
     --excel-orange: #ED7D31;
     --excel-light-blue: #D9E1F2;
-    --excel-header-blue: #4472C4; /* Azul mais vivo e menos pesado */
+    --excel-header-blue: #4472C4;
     --success: #16A34A;
     --warning: #F59E0B;
     --danger: #DC2626;
     --info: #0EA5E9;
+
+    /* NAVEGAÇÃO MASTER v10.0.0 */
+    --nav-sidebar-bg: #003a8c;
+    --nav-glass-bg: rgba(0, 31, 77, 0.95);
+    --nav-text: #ffffff;
+    --nav-text-muted: rgba(255, 255, 255, 0.7);
+    --nav-accent: #ED7D31;
+    --nav-shadow: 0 10px 40px rgba(0,0,0,0.5);
     
     /* Tipografia */
     --font-main: 'Inter', sans-serif;
@@ -235,26 +243,23 @@ body {
     min-height: 100vh;
 }
 
+/* ============================================================
+   SEÇÃO 1: NAVEGAÇÃO & FLYOUT (CENTRALIZADA v10.0.0)
+   ============================================================ */
+
 .navbar-superior {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--excel-header-blue); /* Azul Excel */
-    color: white;
+    background: var(--excel-header-blue);
+    color: var(--nav-text);
     padding: 0 30px;
     height: 60px;
     position: sticky;
     top: 0;
-    z-index: 100000 !important; /* Garantir que fique ACIMA do overlay (9998) */
+    z-index: 100000;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    border-bottom: 3px solid var(--excel-orange); /* Destaque sutil */
-}
-
-.nav-brand {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: white;
+    border-bottom: 3px solid var(--nav-accent);
 }
 
 .nav-links {
@@ -263,45 +268,42 @@ body {
     left: 0 !important;
     width: 280px !important; 
     height: 100vh !important;
-    background: #003a8c !important; 
+    background: var(--nav-sidebar-bg) !important; 
     flex-direction: column !important;
     padding: 60px 0 20px !important;
-    margin: 0 !important;
     z-index: 9999 !important;
-    gap: 0 !important;
-    justify-content: flex-start !important;
-    align-items: flex-start !important;
-    box-shadow: 10px 0 50px rgba(0,0,0,0.5);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(-100%); /* Escondido por padrão */
-    border-right: 2px solid var(--excel-orange);
+    transform: translateX(-100%);
+    border-right: 2px solid var(--nav-accent);
     overflow: visible !important;
+    display: flex !important;
 }
 
 .nav-links.active {
-    transform: translateX(0); /* Abre deslizando */
+    transform: translateX(0) !important;
 }
 
-/* Overlay para escurecer o fundo ao abrir o menu */
-.menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.25);
-    z-index: 9998;
-    display: none;
-    opacity: 0;
-    transition: 0.3s;
+.nav-link {
+    height: 60px !important;
+    width: 100% !important;
+    padding: 0 25px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    color: var(--nav-text) !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    text-decoration: none !important;
+    transition: 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
 }
 
-body.menu-open .menu-overlay {
-    display: block;
-    opacity: 1;
+.nav-link:hover, .nav-link.active {
+    background: rgba(255,255,255,0.1) !important;
+    border-left: 4px solid var(--nav-accent) !important;
 }
 
-/* --- CONFIGURAÇÃO MASTER FLYOUT v8.0.0 (REESCRITA TOTAL) --- */
+/* Flyout de Configurações */
 .nav-dropdown {
     position: relative !important;
     width: 100%;
@@ -311,42 +313,48 @@ body.menu-open .menu-overlay {
     display: none;
     position: absolute !important;
     top: 0 !important;
-    left: 280px !important; /* Exatamente à direita da sidebar */
-    background: rgba(0, 31, 77, 0.95) !important; /* Azul Profundo Vítrico */
+    left: 280px !important;
+    background: var(--nav-glass-bg) !important;
     backdrop-filter: blur(25px) !important;
     -webkit-backdrop-filter: blur(25px) !important;
     min-width: 260px !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     border-radius: 12px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important;
+    box-shadow: var(--nav-shadow) !important;
     flex-direction: column !important;
     overflow: hidden !important;
     z-index: 200000 !important;
-    animation: fadeInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInRight 0.3s ease-out;
+}
+
+.nav-dropdown:hover .nav-dropdown-content {
+    display: flex !important;
 }
 
 .nav-dropdown-content a {
     padding: 15px 25px !important;
-    color: #ffffff !important; /* TESTO BRANCO PURO GARANTIDO */
+    color: var(--nav-text) !important; /* FORÇADO VIA VARIÁVEL v10 */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     font-size: 13.5px !important;
     font-weight: 700 !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
     display: flex !important;
     align-items: center !important;
     gap: 12px !important;
-    transition: 0.2s;
     text-decoration: none !important;
+}
+
+.nav-dropdown-content a:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    padding-left: 35px !important;
 }
 
 .nav-dropdown-content a i {
     width: 20px;
     text-align: center;
-    font-size: 16px;
     color: inherit !important;
 }
 
-/* Cores vibrantes apenas para os ícones */
+/* Ícones do Menu */
 .nav-dropdown-content a .fa-sync { color: #00f2ff !important; }
 .nav-dropdown-content a .fa-users-cog { color: #10b981 !important; }
 .nav-dropdown-content a .fa-database { color: #f59e0b !important; }
@@ -354,137 +362,52 @@ body.menu-open .menu-overlay {
 .nav-dropdown-content a .fa-history { color: #94a3b8 !important; }
 .nav-dropdown-content a .fa-eraser { color: #ef4444 !important; }
 
-.nav-dropdown-content a:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    padding-left: 35px !important;
-}
-
 @keyframes fadeInRight {
     from { opacity: 0; transform: translateX(-20px); }
     to { opacity: 1; transform: translateX(0); }
 }
 
-.nav-link {
-    height: 60px !important;
-    width: 100% !important;
-    flex: none !important;
-    margin: 0 !important;
-    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 0 25px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px !important;
-    color: #ffffff !important;
-    background: transparent !important;
-    transition: 0.2s;
-    opacity: 1 !important;
-}
-
-.nav-link:hover, .nav-link.active {
-    background: rgba(255,255,255,0.1) !important;
-    color: white !important;
-    border-left: 4px solid var(--excel-orange);
-}
-
-/* Mobile Nav Toggle Icon */
+/* Botão Mobile */
 .mobile-menu-btn {
-    display: block;
     background: none;
     border: none;
-    color: white;
+    color: var(--nav-text);
     font-size: 24px;
     cursor: pointer;
-    z-index: 100001 !important; /* Acima de TUDO, incluindo Sidebar e Flyout */
+    z-index: 100001;
 }
 
-@media (max-width: 1024px) {
-    .navbar-superior {
-        padding: 0 20px;
-    }
+/* Overlay */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.4);
+    z-index: 9998;
+    display: none;
+    backdrop-filter: blur(2px);
 }
 
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
+body.menu-open .menu-overlay {
+    display: block;
 }
 
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: rgba(255,255,255,0.85);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 4px solid transparent;
-    transition: 0.2s;
-    height: 100%;
-    padding: 0 5px;
-    white-space: nowrap;
-}
-
-.nav-link:hover, .nav-link.active {
-    color: white;
-    border-bottom-color: white;
-}
-
-/* --- FIM DA REESCRITA v8.0.0 --- */
-
-/* --- REGRA MESTRE DE LEGIBILIDADE v9.0.0 --- */
-.nav-dropdown-content a, 
-.nav-dropdown-content a *,
-.sidebar-lateral a,
-.sidebar-lateral a *,
-.nav-link,
-.nav-link * {
-    color: #ffffff !important; /* BRANCO ABSOLUTO FORÇADO - SEM EXCEÇÕES */
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
-}
-
-.nav-dropdown-content a:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
-    color: #ffffff !important;
-}
-.nav-dropdown:hover .nav-dropdown-content {
-    display: flex;
-}
-
-.nav-user {
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.nav-user:hover {
-    transform: scale(1.1);
-}
-
-.main-content {
-    flex-grow: 1;
-    padding: 0; /* Dashboard já tem padding interno se necessário */
-}
-
-/* User Dropdown System */
+/* User Menu */
 .nav-user-container {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: 2px;
     cursor: pointer;
-    line-height: 1;
 }
 
 .user-name {
     font-size: 11px;
     font-weight: 700;
-    color: white;
+    color: var(--nav-text);
     text-align: center;
 }
 
