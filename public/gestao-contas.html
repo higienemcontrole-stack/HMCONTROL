@@ -262,7 +262,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-msg"></span></div>
 
-<script src="src/js/core.js?v=11.0.2"></script>
+<script src="src/js/core.js?v=11.0.6"></script>
 <script>
     // ─── Config ──────────────────────────────────────────────────────────────
     const SUPA_URL  = 'https://hmcontrol-prod.supabase.co';
@@ -284,7 +284,7 @@
         return h;
     }
 
-    // ─── Carregar usuários do Supabase (tabela profiles) ─────────────────────
+    // ─── Carregar usuários do Supabase (tabela perfis) ───────────────────────
     async function loadUsers() {
         document.getElementById('users-tbody').innerHTML =
             `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Carregando...</div></td></tr>`;
