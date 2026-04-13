@@ -145,7 +145,20 @@ class Core {
                 const isActive = parent.classList.toggle('active');
                 if (isActive && content) {
                     content.style.display = 'flex';
-                    content.style.top = rect.top + 'px';
+                    
+                    // Lógica de Viewport Safety (v3.21)
+                    const menuHeight = 280; // Altura estimada do menu administrativo
+                    const viewportHeight = window.innerHeight;
+                    let topPos = rect.top;
+
+                    // Clamp Top: Garante que o menu não saia por baixo ou por cima
+                    if (topPos + menuHeight > viewportHeight) {
+                        topPos = Math.max(10, viewportHeight - menuHeight - 10);
+                    } else {
+                        topPos = Math.max(10, topPos);
+                    }
+
+                    content.style.top = topPos + 'px';
                     content.style.left = '280px';
                 } else if (content) {
                     content.style.display = 'none';

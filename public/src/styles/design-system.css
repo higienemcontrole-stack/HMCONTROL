@@ -331,8 +331,8 @@ body {
         top: 0;
         width: 240px !important;
         background: white !important;
-        box-shadow: 10px 10px 40px rgba(0,0,0,0.5) !important;
-        border: 3px solid var(--primary) !important; /* Borda grossa para diagnóstico */
+        box-shadow: 10px 10px 40px rgba(0,0,0,0.2) !important;
+        border: 1px solid var(--border) !important;
         border-radius: 0 12px 12px 0 !important;
         padding: 5px 0 !important;
         z-index: 100000 !important; 
@@ -340,7 +340,7 @@ body {
         flex-direction: column;
         opacity: 1 !important;
         visibility: visible !important;
-        animation: none !important; /* Remover animação para teste */
+        animation: fadeInRight 0.2s ease-out;
     }
 
     .nav-dropdown:hover .nav-dropdown-content,
