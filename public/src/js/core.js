@@ -116,8 +116,8 @@ class Core {
 
         // Fallback: ler direto da tabela profiles no Supabase
         try {
-            const SUPA_URL = 'https://hmcontrol-legacy.supabase.co';
-            const SUPA_KEY = '[PURGED_ANON_KEY]';
+            const SUPA_URL = 'https://hmcontrol-prod.supabase.co';
+            const SUPA_KEY = '[PURGED_SERVICE_KEY]';
             const r = await fetch(
                 `${SUPA_URL}/rest/v1/profiles?id=eq.${this.user.id}&select=full_name,email,role,acessos,ativo`,
                 { headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${this.token}` } }
