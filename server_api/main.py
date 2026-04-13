@@ -13,10 +13,10 @@ from supabase import create_client, Client
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, "config", ".env"))
 
-# Importações Modulares
-from logic.audit_logger import logger
-from logic.auth_manager import AuthManager
-from models.schemas import UserLogin, UserProfileUpdate, AdminUserCreate, RegistroCreate
+# Importações Modulares (Absolute Path for Vercel)
+from server_api.logic.audit_logger import logger
+from server_api.logic.auth_manager import AuthManager
+from server_api.models.schemas import UserLogin, UserProfileUpdate, AdminUserCreate, RegistroCreate
 import pandas as pd
 
 # Configurações de Ambiente (Vercel Ready)
