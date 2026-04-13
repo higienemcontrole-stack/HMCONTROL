@@ -25,3 +25,14 @@ class AuthManager:
         if not self.supabase_admin:
             raise Exception("Service Role Key não configurada no servidor.")
         return self.supabase_admin.auth.admin.delete_user(user_id)
+
+    def list_users_admin(self):
+        """Retorna todos os usuários cadastrados no Supabase Auth (Admin)"""
+        if not self.supabase_admin:
+            raise Exception("Service Role Key não configurada no servidor.")
+        try:
+            # A API do Supabase Admin retorna um objeto com a propriedade 'users'
+            res = self.supabase_admin.auth.admin.list_users()
+            return res.users if hasattr(res, 'users') else res
+        except Exception as e:
+            raise Exception(f"Erro ao listar usuários no Supabase: {str(e)}")

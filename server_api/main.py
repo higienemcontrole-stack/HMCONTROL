@@ -4,14 +4,19 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from typing import List, Optional
 from pydantic import BaseModel
 import os
+import logging
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
+# Ajuste de path para encontrar o config/.env corretamente
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, "config", ".env"))
+
 # Importações Modulares
-from .logic.audit_logger import logger
-from .logic.auth_manager import AuthManager
-from .models.schemas import UserLogin, UserProfileUpdate, AdminUserCreate, RegistroCreate
+from logic.audit_logger import logger
+from logic.auth_manager import AuthManager
+from models.schemas import UserLogin, UserProfileUpdate, AdminUserCreate, RegistroCreate
 import pandas as pd
 
 # Configurações de Ambiente (Vercel Ready)
@@ -233,8 +238,35 @@ async def get_pivot():
 # --- GESTÃO DE USUÁRIOS ---
 @app.get("/api/admin/users")
 async def list_users():
-    profiles = supabase.table("perfis").select("*").order("nome_completo").execute()
-    return profiles.data
+    try:
+        # 1. Busca todos os usuários reais do Supabase Auth
+        auth_users = auth_admin.list_users_admin()
+        
+        # 2. Busca todos os perfis configurados na tabela
+        profiles_res = supabase.table("perfis").select("*").execute()
+        profiles_map = {p["id"]: p for p in profiles_res.data}
+        
+        # 3. Faz o Merge e Filtro
+        final_list = []
+        for u in auth_users:
+            # FILTRO DE SEGURANÇA: Omitir conta Dev Master conforme solicitado
+            if u.email == "dev_master@serialaudit.com":
+                continue
+                
+            p = profiles_map.get(u.id, {})
+            final_list.append({
+                "id": u.id,
+                "email": u.email,
+                "nome_completo": p.get("nome_completo") or u.user_metadata.get("nome_completo") or "Usuário Pendente",
+                "cargo": p.get("cargo") or "user",
+                "acessos": p.get("acessos") or ["registro"],
+                "sincronizado": u.id in profiles_map
+            })
+            
+        return sorted(final_list, key=lambda x: x["nome_completo"])
+    except Exception as e:
+        logger.error(f"Erro ao listar usuários sincronizados: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/admin/users")
 async def create_user(user: AdminUserCreate):
@@ -263,6 +295,41 @@ async def get_profile(user_id: str = None):
         raise HTTPException(status_code=400, detail="ID de usuário não fornecido.")
     profile = supabase.table("perfis").select("*").eq("id", user_id).single().execute()
     return profile.data
+
+@app.post("/api/user/update")
+async def update_user_profile(data: dict):
+    """Atualiza perfil e senha (se fornecido) de forma sincronizada"""
+    try:
+        user_id = data.get("user_id")
+        if not user_id: raise HTTPException(status_code=400, detail="User ID obrigatório")
+        
+        # 1. Se houver nova senha, atualizar no Supabase Auth
+        new_password = data.get("password")
+        if new_password:
+            auth_admin.supabase_admin.auth.admin.update_user_by_id(
+                user_id, 
+                {"password": new_password}
+            )
+            
+        # 2. Atualizar ou Inserir na tabela de Perfis (Upsert)
+        profile_data = {
+            "id": user_id,
+            "nome_completo": data.get("nome_completo"),
+            "cargo": data.get("cargo"),
+            "acessos": data.get("acessos", ["dashboard"])
+        }
+        
+        # Tenta atualizar
+        res = supabase.table("perfis").update(profile_data).eq("id", user_id).execute()
+        
+        # Se não existia o perfil (Pending), insere agora
+        if not res.data:
+            supabase.table("perfis").insert(profile_data).execute()
+            
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Erro ao atualizar perfil sincronizado: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --- SALVAR REGISTRO ---
 @app.post("/api/registros")
@@ -293,6 +360,16 @@ async def save_registro(reg: RegistroCreate):
     except Exception as e:
         logger.error(f"Erro ao salvar registro: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/registros/{reg_id}")
+async def delete_registro(reg_id: str):
+    """Exclui uma auditoria específica pelo ID único"""
+    try:
+        supabase.table("registros").delete().eq("id", reg_id).execute()
+        return {"status": "success", "message": "Registro excluído com sucesso."}
+    except Exception as e:
+        logger.error(f"Erro ao excluir registro: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro ao excluir registro do banco.")
 
 if __name__ == "__main__":
     import uvicorn

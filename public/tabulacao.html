@@ -446,6 +446,9 @@
         const yearFilter = document.getElementById('filter-year').value;
         const searchTerm = document.getElementById('search-input').value.toLowerCase();
         const body = document.getElementById('table-body');
+        const userRole = localStorage.getItem('user_role') || '';
+        const canDelete = (userRole === 'tabulacao' || userRole === 'admin');
+        
         body.innerHTML = '';
 
         const filtered = rawData.filter(row => {

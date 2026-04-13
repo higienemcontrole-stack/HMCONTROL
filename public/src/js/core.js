@@ -140,28 +140,34 @@ class Core {
         }
     }
 
-    async openProfileModal() {
-        if (!this.user || !this.user.id) return;
+    async openProfileModal(externalUser = null) {
         const modal = document.getElementById('profile-modal');
         if (!modal) return;
 
         try {
-            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${this.user.id}`, {
+            // Se externalUser for passado (Admin), usamos os dados dele
+            // Caso contrário, buscamos do usuário logado diretamente do Supabase
+            const targetId = externalUser ? externalUser.id : this.user.id;
+            this.editingUserId = targetId;
+            
+            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${targetId}`, {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
-            const profile = await res.json();
+            
+            // Perfil pode vir vazio se for um usuário pendente
+            const profile = res.ok ? await res.json() : (externalUser || {});
 
-            // Atribuição de Valores (População Real do Supabase)
-            document.getElementById('profile-name').value = profile.nome_completo || '';
-            document.getElementById('profile-email').value = profile.email || '';
+            // População do Modal
+            document.getElementById('profile-name').value = profile.nome_completo || externalUser?.nome_completo || '';
+            document.getElementById('profile-email').value = profile.email || externalUser?.email || '';
             document.getElementById('profile-password').value = ''; 
             
             const roleEl = document.getElementById('profile-role');
-            const isAdmin = profile.cargo === 'admin';
+            const isAdmin = this.user.cargo === 'admin';
             
             if (roleEl) {
                 roleEl.value = profile.cargo || 'user';
-                roleEl.disabled = !isAdmin; // Só Admin muda cargo
+                roleEl.disabled = !isAdmin; // Só Admin muda cargo de terceiros ou o próprio
             }
             
             const screenList = document.getElementById('profile-screens');
@@ -172,25 +178,31 @@ class Core {
                 checks.forEach(check => {
                     if (check.value !== 'dashboard') {
                         check.checked = isAdmin || userScreens.includes(check.value);
-                        check.disabled = !isAdmin; // Só Admin muda acessos
+                        check.disabled = !isAdmin;
                     }
                 });
             }
 
             modal.classList.add('active');
-        } catch (err) { alert('Erro ao abrir perfil.'); }
+        } catch (err) { 
+            console.error('[Core] Modal Open Error:', err);
+            alert('Erro ao carregar perfil para edição.'); 
+        }
     }
 
     closeProfileModal() {
         const modal = document.getElementById('profile-modal');
         if (modal) modal.classList.remove('active');
+        this.editingUserId = null;
     }
 
     async saveProfileData() {
         const btn = document.getElementById('btn-save-profile');
         const pass = document.getElementById('profile-password').value;
+        const targetId = this.editingUserId || this.user.id;
         
         const payload = {
+            user_id: targetId,
             nome_completo: document.getElementById('profile-name').value,
             password: pass || null,
             cargo: document.getElementById('profile-role').value,
@@ -211,12 +223,20 @@ class Core {
             });
 
             if (res.ok) {
-                alert('Sucesso: Perfil e Senha (se alterada) atualizados no Supabase.');
+                alert('Sucesso: Perfil e Senha sincronizados no Supabase.');
                 this.closeProfileModal();
-                this.refreshUI();
+                if (targetId === this.user.id) {
+                    // Se editou o próprio perfil, atualiza sessão local
+                    this.user.nome_completo = payload.nome_completo;
+                    localStorage.setItem('hm_user', JSON.stringify(this.user));
+                    this.refreshUI();
+                } else {
+                    // Se editou outro, recarrega a lista de usuários
+                    this.loadUsersList();
+                }
             } else {
                 const err = await res.json();
-                throw new Error(err.detail || 'Erro ao salvar');
+                throw new Error(err.detail || 'Erro ao sincronizar');
             }
         } catch (e) { alert('Erro: ' + e.message); }
         finally { 
@@ -262,15 +282,21 @@ class Core {
         // 1. Localizar o container de navegação ou dropdown de configurações
         const navDropdown = document.querySelector('.nav-dropdown-content');
         if (navDropdown) {
-            // Limpar/Substituir conteúdo para o Hub de Elite
+            console.log('[Core] Injetando Elite Hub Administrativo.');
+            // Garantir que o texto seja visível colocando estilo inline se necessário
+            navDropdown.style.visibility = 'visible';
+            navDropdown.style.opacity = '1';
+            
             navDropdown.innerHTML = `
-                <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
-                <a href="javascript:HM.openUserManagementModal()"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
-                <a href="javascript:HM.exportSnapshot()"><i class="fas fa-file-excel"></i> Snapshots (Backup)</a>
-                <a href="javascript:HM.openMetas()"><i class="fas fa-bullseye"></i> Configurar Metas</a>
-                <a href="javascript:HM.openAuditLogs()"><i class="fas fa-history"></i> Logs de Auditoria</a>
-                <a href="javascript:HM.clearCache()" style="color: var(--danger);"><i class="fas fa-eraser"></i> Limpar Cache</a>
+                <a href="javascript:HM.syncDatabase()" style="color: #475569 !important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                <a href="javascript:HM.openUserManagementModal()" style="color: #475569 !important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                <a href="javascript:HM.exportSnapshot()" style="color: #475569 !important;"><i class="fas fa-file-excel"></i> Snapshots (Backup)</a>
+                <a href="javascript:HM.openMetas()" style="color: #475569 !important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                <a href="javascript:HM.openAuditLogs()" style="color: #475569 !important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                <a href="javascript:HM.clearCache()" style="color: var(--danger) !important;"><i class="fas fa-eraser"></i> Limpar Cache</a>
             `;
+        } else {
+            console.warn('[Core] .nav-dropdown-content não encontrado para injeção.');
         }
 
         // 2. Injetar Botão de Atalho no Dropdown de Usuário (Versão Curta)
@@ -367,12 +393,17 @@ class Core {
             list.innerHTML = '';
             users.forEach(u => {
                 const tr = document.createElement('tr');
+                const statusBadge = u.sincronizado 
+                    ? '<span class="status-pill ok">Sincronizado</span>' 
+                    : '<span class="status-pill pending">Perfil Pendente</span>';
+                
                 tr.innerHTML = `
-                    <td>${u.nome_completo || 'Sem Nome'}</td>
+                    <td>${u.nome_completo || 'Sem Nome'} <br> ${statusBadge}</td>
                     <td>${u.email}</td>
                     <td><span class="role-badge ${u.cargo}">${u.cargo}</span></td>
                     <td style="text-align:center;">
-                        ${u.id === this.user.id ? '' : `<button class="btn-admin-delete" onclick="HM.deleteUser('${u.id}')"><i class="fas fa-trash"></i></button>`}
+                        <button class="btn-admin-edit" onclick="HM.editUserDetails('${u.id}', '${u.email}')" title="Configurar Perfil"><i class="fas fa-id-card"></i></button>
+                        ${u.id === this.user.id ? '' : `<button class="btn-admin-delete" onclick="HM.deleteUser('${u.id}')" title="Excluir"><i class="fas fa-trash"></i></button>`}
                     </td>
                 `;
                 list.appendChild(tr);
@@ -411,6 +442,19 @@ class Core {
             alert('Usuário excluído!');
             this.loadUsersList();
         } catch (e) { alert('Erro ao excluir.'); }
+    }
+
+    async editUserDetails(userId, email) {
+        // Busca os usuários da lista atual (cacheada na tabela) ou faz um fetch rápido
+        try {
+            const users = await apiService.getAdminUsers();
+            const target = users.find(u => u.id === userId);
+            if (target) {
+                this.openProfileModal(target);
+            }
+        } catch (e) {
+            alert('Erro ao carregar detalhes do usuário.');
+        }
     }
 
     async syncDatabase() {

@@ -1215,3 +1215,41 @@ body {
 .modal-card.large {
     max-width: 700px;
 }
+
+/* Gestão de Contas - Elite Hub */
+.status-pill {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-top: 4px;
+}
+.status-pill.ok { background: #dcfce7; color: #166534; }
+.status-pill.pending { background: #fee2e2; color: #991b1b; }
+
+.btn-admin-edit, .btn-admin-delete {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+    transition: 0.2s;
+}
+.btn-admin-edit { color: var(--primary); }
+.btn-admin-delete { color: var(--danger); }
+.btn-admin-edit:hover, .btn-admin-delete:hover { transform: scale(1.2); }
+
+.role-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.role-badge.admin { background: #1e3a8a; color: white; }
+.role-badge.user { background: #cbd5e1; color: #334155; }
+.role-badge.registro { background: #70AD47; color: white; }
+.role-badge.operacional { background: #ED7D31; color: white; }
+.role-badge.auditor { background: #4472C4; color: white; }
