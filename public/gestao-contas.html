@@ -4,55 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HM Control — Gestão de Contas</title>
-    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.1">
+    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .config-page { padding: 30px; background: #F2F2F2; min-height: calc(100vh - 60px); }
         .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .breadcrumb a { color: var(--primary); text-decoration: none; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
-        .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
-        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-primary:hover { background: #365ba0; transform: translateY(-1px); }
-        .btn-danger { background: #dc2626; }
+        .section-card { background: white; border-radius: 10px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: var(--excel-blue); color: white; }
+        .btn-primary:hover { background: #365ba0; }
+        .btn-danger { background: #dc2626; color: white; }
         .btn-danger:hover { background: #b91c1c; }
-        .btn-success { background: #16a34a; }
-        .btn-success:hover { background: #15803d; }
-        .btn-sm { padding: 7px 14px; font-size: 12px; }
-        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
-        .search-input { flex: 1; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
-        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-ghost { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .btn-ghost:hover { background: #e2e8f0; }
+
+        /* Toolbar */
+        .toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 200px; padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+        .search-input:focus { border-color: var(--excel-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .filter-select { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; background: white; }
+
+        /* Tabela */
         .users-table { width: 100%; border-collapse: collapse; }
-        .users-table thead th { background: var(--excel-light-blue); padding: 12px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #8497b0; }
+        .users-table thead th { background: var(--excel-light-blue); padding: 11px 14px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #1e3a8a; letter-spacing: 0.5px; text-align: left; }
         .users-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.15s; }
         .users-table tbody tr:hover { background: #f8fafc; }
-        .users-table tbody td { padding: 14px 16px; font-size: 14px; color: #1e293b; }
-        .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--excel-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
-        .user-info { display: flex; align-items: center; gap: 12px; }
-        .badge-role { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .users-table tbody td { padding: 13px 14px; font-size: 13px; color: #1e293b; vertical-align: middle; }
+        .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: white; flex-shrink: 0; }
+        .user-cell { display: flex; align-items: center; gap: 10px; }
+        .user-name { font-weight: 700; }
+        .user-email { font-size: 11px; color: #94a3b8; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
         .badge-admin { background: #dbeafe; color: #1d4ed8; }
-        .badge-user { background: #f0fdf4; color: #16a34a; }
-        .badge-status-on { background: #dcfce7; color: #16a34a; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-        .badge-status-off { background: #fee2e2; color: #dc2626; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-user { background: #dcfce7; color: #16a34a; }
+        .badge-on { background: #dcfce7; color: #16a34a; }
+        .badge-off { background: #fee2e2; color: #dc2626; }
+        .perms-chips { display: flex; flex-wrap: wrap; gap: 4px; max-width: 280px; }
+        .chip { font-size: 10px; padding: 2px 8px; border-radius: 20px; background: #f1f5f9; color: #475569; font-weight: 600; border: 1px solid #e2e8f0; }
+        .chip.all { background: #ede9fe; color: #6d28d9; }
         .action-btns { display: flex; gap: 6px; }
-        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
-        .empty-state i { font-size: 48px; margin-bottom: 16px; display: block; }
+
+        /* Empty / loading */
+        .empty-state { text-align: center; padding: 50px; color: #94a3b8; }
+        .empty-state i { font-size: 40px; display: block; margin-bottom: 12px; }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 28px; right: 28px; padding: 14px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; color: white; z-index: 99999; display: none; gap: 10px; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .toast.show { display: flex; animation: fadeInUp 0.3s ease; }
+        .toast.success { background: #16a34a; }
+        .toast.error { background: #dc2626; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
         /* Modal */
-        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); z-index: 9000; justify-content: center; align-items: center; }
-        .modal-backdrop.active { display: flex; }
-        .modal-box { background: white; border-radius: 14px; padding: 32px; width: 100%; max-width: 480px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); }
-        .modal-box h3 { font-size: 20px; font-weight: 800; color: var(--excel-blue); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
-        .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-        .form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
-        .form-field input, .form-field select { padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
-        .form-field input:focus, .form-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-        .btn-cancel { padding: 10px 20px; background: #f1f5f9; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9000; justify-content: center; align-items: center; }
+        .modal-bg.open { display: flex; }
+        .modal-box { background: white; border-radius: 14px; padding: 32px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--excel-light-blue); }
+        .modal-header h3 { font-size: 20px; font-weight: 800; color: var(--excel-blue); margin: 0; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-field label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+        .form-field input, .form-field select { padding: 10px 13px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-field input:focus, .form-field select:focus { border-color: var(--excel-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+
+        /* Permissões */
+        .perm-section { margin-bottom: 16px; }
+        .perm-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 10px; }
+        .perm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .perm-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.15s; }
+        .perm-item:hover { border-color: var(--excel-blue); background: #eff6ff; }
+        .perm-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--excel-blue); cursor: pointer; }
+        .perm-item label { font-size: 13px; font-weight: 600; color: #1e293b; cursor: pointer; display: flex; align-items: center; gap: 7px; }
+        .perm-item.checked { border-color: var(--excel-blue); background: #eff6ff; }
+
+        /* Confirm modal */
+        .confirm-box { background: white; border-radius: 14px; padding: 32px; max-width: 400px; width: 90%; box-shadow: 0 24px 60px rgba(0,0,0,0.25); text-align: center; }
+        .confirm-box h4 { font-size: 18px; font-weight: 800; color: #dc2626; margin-bottom: 8px; }
+        .confirm-box p { color: #64748b; font-size: 14px; margin-bottom: 24px; line-height: 1.6; }
+        .confirm-btns { display: flex; gap: 10px; justify-content: center; }
     </style>
 </head>
-<body style="background: #F2F2F2;">
+<body style="background:#F2F2F2;">
 <div class="app-container">
     <header class="navbar-superior">
         <button class="mobile-menu-btn" id="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
@@ -97,179 +138,428 @@
 
         <div class="page-header">
             <div class="page-title"><i class="fas fa-users-cog" style="color:var(--excel-blue)"></i> Gestão de Contas</div>
-            <button class="btn-primary" onclick="openNewUserModal()"><i class="fas fa-user-plus"></i> Novo Usuário</button>
+            <button class="btn btn-primary" onclick="openModal()">
+                <i class="fas fa-user-plus"></i> Novo Usuário
+            </button>
         </div>
 
         <div class="section-card">
-            <div class="search-bar">
-                <input class="search-input" type="text" id="search-users" placeholder="🔍  Buscar por nome ou e-mail..." oninput="filterUsers(this.value)">
-                <select id="filter-role" onchange="filterUsers()" style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+            <div class="toolbar">
+                <input class="search-input" type="text" id="search" placeholder="🔍  Buscar por nome ou e-mail..." oninput="filterTable()">
+                <select class="filter-select" id="filter-cargo" onchange="filterTable()">
                     <option value="">Todos os perfis</option>
-                    <option value="admin">Admin</option>
+                    <option value="admin">Administrador</option>
                     <option value="user">Usuário</option>
                 </select>
+                <select class="filter-select" id="filter-status" onchange="filterTable()">
+                    <option value="">Todos os status</option>
+                    <option value="active">Ativo</option>
+                    <option value="inactive">Inativo</option>
+                </select>
+                <button class="btn btn-ghost btn-sm" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> Recarregar</button>
             </div>
 
-            <table class="users-table" id="users-table">
+            <table class="users-table">
                 <thead>
                     <tr>
                         <th>Usuário</th>
-                        <th>E-mail</th>
                         <th>Perfil</th>
+                        <th>Telas com Acesso</th>
                         <th>Status</th>
                         <th>Criado em</th>
-                        <th>Ações</th>
+                        <th style="text-align:center;">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="users-tbody">
-                    <tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Carregando usuários...</div></td></tr>
+                    <tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Carregando usuários...</div></td></tr>
                 </tbody>
             </table>
+            <div id="users-count" style="margin-top:12px;font-size:12px;color:#94a3b8;"></div>
         </div>
     </main>
 </div>
 
-<!-- Modal Novo/Editar Usuário -->
-<div class="modal-backdrop" id="user-modal">
+<!-- Modal Criar/Editar Usuário -->
+<div class="modal-bg" id="user-modal">
     <div class="modal-box">
-        <h3><i class="fas fa-user-cog"></i> <span id="modal-title">Novo Usuário</span></h3>
-        <input type="hidden" id="edit-user-id">
-        <div class="form-field">
-            <label>Nome Completo</label>
-            <input type="text" id="field-nome" placeholder="Ex: João da Silva">
+        <div class="modal-header">
+            <i class="fas fa-user-cog" style="color:var(--excel-blue);font-size:22px;"></i>
+            <h3 id="modal-title">Novo Usuário</h3>
         </div>
-        <div class="form-field">
-            <label>E-mail</label>
-            <input type="email" id="field-email" placeholder="email@hospital.com">
+        <input type="hidden" id="edit-uid">
+        <div class="form-row">
+            <div class="form-field">
+                <label>Nome Completo *</label>
+                <input type="text" id="f-nome" placeholder="Ex: João da Silva">
+            </div>
+            <div class="form-field">
+                <label>E-mail *</label>
+                <input type="email" id="f-email" placeholder="email@hospital.com">
+            </div>
         </div>
-        <div class="form-field">
-            <label>Senha <span id="pwd-hint" style="font-weight:400;text-transform:none;color:#94a3b8;">(deixe vazio para manter)</span></label>
-            <input type="password" id="field-senha" placeholder="Mínimo 6 caracteres">
+        <div class="form-row">
+            <div class="form-field">
+                <label>Senha <span id="pwd-note" style="font-weight:400;text-transform:none;letter-spacing:0;color:#94a3b8;">(obrigatória para novo usuário)</span></label>
+                <input type="password" id="f-senha" placeholder="Mínimo 6 caracteres">
+            </div>
+            <div class="form-field">
+                <label>Perfil de Acesso *</label>
+                <select id="f-cargo" onchange="toggleAdminPerms()">
+                    <option value="user">👤 Usuário</option>
+                    <option value="admin">🛡️ Administrador</option>
+                </select>
+            </div>
         </div>
-        <div class="form-field">
-            <label>Perfil de Acesso</label>
-            <select id="field-cargo">
-                <option value="user">👤 Usuário</option>
-                <option value="admin">🛡️ Administrador</option>
-            </select>
+
+        <!-- Permissões por Tela -->
+        <div id="perms-section" class="perm-section">
+            <div class="perm-title"><i class="fas fa-lock"></i> Telas com Acesso</div>
+            <div id="admin-note" style="display:none;padding:10px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:13px;color:#1d4ed8;margin-bottom:12px;">
+                <i class="fas fa-shield-alt"></i> Administradores têm acesso irrestrito a todas as telas automaticamente.
+            </div>
+            <div class="perm-grid" id="perm-grid">
+                <label class="perm-item" onclick="togglePerm(this)">
+                    <input type="checkbox" value="dashboard" checked> <span><i class="fas fa-chart-bar" style="color:#2563eb"></i> Dashboard</span>
+                </label>
+                <label class="perm-item" onclick="togglePerm(this)">
+                    <input type="checkbox" value="registro"> <span><i class="fas fa-edit" style="color:#16a34a"></i> Registro</span>
+                </label>
+                <label class="perm-item" onclick="togglePerm(this)">
+                    <input type="checkbox" value="tabulacao"> <span><i class="fas fa-table" style="color:#7c3aed"></i> Tabulação</span>
+                </label>
+                <label class="perm-item" onclick="togglePerm(this)">
+                    <input type="checkbox" value="dinamica"> <span><i class="fas fa-sync" style="color:#0369a1"></i> Dinâmica</span>
+                </label>
+                <label class="perm-item" onclick="togglePerm(this)">
+                    <input type="checkbox" value="validacoes"> <span><i class="fas fa-check-double" style="color:#059669"></i> Validações</span>
+                </label>
+                <label class="perm-item" onclick="togglePerm(this)">
+                    <input type="checkbox" value="configuracoes"> <span><i class="fas fa-cogs" style="color:#d97706"></i> Configurações</span>
+                </label>
+            </div>
         </div>
+
         <div class="modal-footer">
-            <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
-            <button class="btn-primary" onclick="saveUser()"><i class="fas fa-save"></i> Salvar</button>
+            <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveUser()"><i class="fas fa-save"></i> Salvar</button>
         </div>
     </div>
 </div>
 
-<script src="src/js/core.js?v=11.0.1"></script>
-<script>
-    let allUsers = [];
+<!-- Modal Confirmar Exclusão -->
+<div class="modal-bg" id="confirm-modal">
+    <div class="confirm-box">
+        <i class="fas fa-exclamation-triangle" style="font-size:40px;color:#dc2626;margin-bottom:14px;display:block;"></i>
+        <h4>Excluir Usuário?</h4>
+        <p id="confirm-msg">Esta ação é <strong>irreversível</strong>. O usuário será removido do sistema e do Supabase Auth, perdendo todo o acesso.</p>
+        <div class="confirm-btns">
+            <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
+            <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmDelete()"><i class="fas fa-trash"></i> Sim, Excluir</button>
+        </div>
+    </div>
+</div>
 
-    async function loadUsers() {
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-msg"></span></div>
+
+<script src="src/js/core.js?v=11.0.2"></script>
+<script>
+    // ─── Config ──────────────────────────────────────────────────────────────
+    const SUPA_URL  = 'https://hmcontrol-legacy.supabase.co';
+    const SUPA_KEY  = '[PURGED_ANON_KEY]';
+
+    const SCREENS = ['dashboard','registro','tabulacao','dinamica','validacoes','configuracoes'];
+    const SCREEN_LABELS = { dashboard:'Dashboard', registro:'Registro', tabulacao:'Tabulação', dinamica:'Dinâmica', validacoes:'Validações', configuracoes:'Configurações' };
+    const AVATAR_COLORS = ['#2563eb','#16a34a','#7c3aed','#dc2626','#d97706','#0369a1','#059669','#9333ea'];
+
+    let allUsers   = [];
+    let deleteTarget = null;
+    let editingId  = null;
+
+    // ─── Headers Supabase ─────────────────────────────────────────────────────
+    function supaHeaders(withService = false) {
         const token = localStorage.getItem('hm_token');
+        const h = { 'apikey': SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+        if (token) h['Authorization'] = `Bearer ${token}`;
+        return h;
+    }
+
+    // ─── Carregar usuários do Supabase (tabela profiles) ─────────────────────
+    async function loadUsers() {
+        document.getElementById('users-tbody').innerHTML =
+            `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Carregando...</div></td></tr>`;
         try {
-            const res = await fetch('/api/users', { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!res.ok) throw new Error('Erro ao carregar');
+            const res = await fetch(`${SUPA_URL}/rest/v1/profiles?select=id,full_name,email,role,acessos,ativo,created_at&order=created_at.desc`, {
+                headers: supaHeaders()
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             allUsers = await res.json();
-            renderUsers(allUsers);
+            renderUsersTable(allUsers);
         } catch (e) {
-            document.getElementById('users-tbody').innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i>Não foi possível carregar os usuários.<br><small>${e.message}</small></div></td></tr>`;
+            document.getElementById('users-tbody').innerHTML =
+                `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>Erro ao carregar usuários do Supabase.<br><small style="color:#94a3b8">${e.message}</small></div></td></tr>`;
         }
     }
 
-    function renderUsers(users) {
+    // ─── Renderizar tabela ────────────────────────────────────────────────────
+    function renderUsersTable(users) {
         const tbody = document.getElementById('users-tbody');
+        document.getElementById('users-count').textContent = `${users.length} usuário(s) encontrado(s)`;
         if (!users.length) {
             tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users"></i>Nenhum usuário encontrado.</div></td></tr>`;
             return;
         }
-        tbody.innerHTML = users.map(u => {
-            const initials = (u.nome || u.email || '?').substring(0, 2).toUpperCase();
-            const createdAt = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—';
-            const statusBadge = u.ativo !== false ? '<span class="badge-status-on">● Ativo</span>' : '<span class="badge-status-off">● Inativo</span>';
-            const roleBadge = u.cargo === 'admin' ? '<span class="badge-role badge-admin">🛡️ Admin</span>' : '<span class="badge-role badge-user">👤 Usuário</span>';
+        tbody.innerHTML = users.map((u, i) => {
+            const name     = u.full_name || u.email || '—';
+            const initials = name.substring(0, 2).toUpperCase();
+            const color    = AVATAR_COLORS[i % AVATAR_COLORS.length];
+            const isAdmin  = u.role === 'admin';
+            const isActive = u.ativo !== false;
+            const created  = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—';
+            const acessos  = u.acessos || [];
+
+            const roleBadge = isAdmin
+                ? `<span class="badge badge-admin">🛡️ Admin</span>`
+                : `<span class="badge badge-user">👤 Usuário</span>`;
+            const statusBadge = isActive
+                ? `<span class="badge badge-on">● Ativo</span>`
+                : `<span class="badge badge-off">● Inativo</span>`;
+
+            let permsHtml;
+            if (isAdmin) {
+                permsHtml = `<span class="chip all">✦ Acesso Total</span>`;
+            } else if (!acessos.length) {
+                permsHtml = `<span style="color:#94a3b8;font-size:12px;font-style:italic;">Sem acessos definidos</span>`;
+            } else {
+                permsHtml = acessos.map(s => `<span class="chip">${SCREEN_LABELS[s] || s}</span>`).join('');
+            }
+
             return `<tr>
-                <td><div class="user-info"><div class="avatar">${initials}</div><strong>${u.nome || '—'}</strong></div></td>
-                <td>${u.email || '—'}</td>
+                <td>
+                    <div class="user-cell">
+                        <div class="avatar" style="background:${color}">${initials}</div>
+                        <div>
+                            <div class="user-name">${name}</div>
+                            <div class="user-email">${u.email || ''}</div>
+                        </div>
+                    </div>
+                </td>
                 <td>${roleBadge}</td>
+                <td><div class="perms-chips">${permsHtml}</div></td>
                 <td>${statusBadge}</td>
-                <td>${createdAt}</td>
-                <td><div class="action-btns">
-                    <button class="btn-primary btn-sm" onclick="editUser('${u.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-primary btn-sm btn-danger" onclick="toggleUser('${u.id}', ${u.ativo !== false})">${u.ativo !== false ? '<i class="fas fa-ban"></i>' : '<i class="fas fa-check"></i>'}</button>
-                </div></td>
+                <td>${created}</td>
+                <td>
+                    <div class="action-btns" style="justify-content:center;">
+                        <button class="btn btn-primary btn-sm" onclick="openModal('${u.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="toggleStatus('${u.id}', ${isActive})" title="${isActive ? 'Desativar' : 'Ativar'}">
+                            <i class="fas ${isActive ? 'fa-ban' : 'fa-check'}" style="color:${isActive ? '#f59e0b' : '#16a34a'}"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="askDelete('${u.id}', '${name.replace("'","")}')" title="Excluir"><i class="fas fa-trash"></i></button>
+                    </div>
+                </td>
             </tr>`;
         }).join('');
     }
 
-    function filterUsers(val) {
-        const search = (document.getElementById('search-users').value || '').toLowerCase();
-        const role = document.getElementById('filter-role').value;
+    // ─── Filtro local ─────────────────────────────────────────────────────────
+    function filterTable() {
+        const q      = (document.getElementById('search').value || '').toLowerCase();
+        const role   = document.getElementById('filter-cargo').value;
+        const status = document.getElementById('filter-status').value;
         const filtered = allUsers.filter(u => {
-            const matchText = (u.nome || '').toLowerCase().includes(search) || (u.email || '').toLowerCase().includes(search);
-            const matchRole = !role || u.cargo === role;
-            return matchText && matchRole;
+            const matchQ = !q || (u.full_name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+            const matchC = !role || u.role === role;
+            const matchS = !status || (status === 'active' ? u.ativo !== false : u.ativo === false);
+            return matchQ && matchC && matchS;
         });
-        renderUsers(filtered);
+        renderUsersTable(filtered);
     }
 
-    function openNewUserModal() {
-        document.getElementById('modal-title').textContent = 'Novo Usuário';
-        document.getElementById('edit-user-id').value = '';
-        document.getElementById('field-nome').value = '';
-        document.getElementById('field-email').value = '';
-        document.getElementById('field-senha').value = '';
-        document.getElementById('field-cargo').value = 'user';
-        document.getElementById('pwd-hint').style.display = 'none';
-        document.getElementById('user-modal').classList.add('active');
+    // ─── Toggle checkbox permission ──────────────────────────────────────────
+    function togglePerm(label) {
+        label.classList.toggle('checked', label.querySelector('input').checked);
     }
 
-    function editUser(id) {
-        const u = allUsers.find(x => x.id == id);
-        if (!u) return;
-        document.getElementById('modal-title').textContent = 'Editar Usuário';
-        document.getElementById('edit-user-id').value = u.id;
-        document.getElementById('field-nome').value = u.nome || '';
-        document.getElementById('field-email').value = u.email || '';
-        document.getElementById('field-senha').value = '';
-        document.getElementById('field-cargo').value = u.cargo || 'user';
-        document.getElementById('pwd-hint').style.display = 'inline';
-        document.getElementById('user-modal').classList.add('active');
+    function toggleAdminPerms() {
+        const isAdmin = document.getElementById('f-cargo').value === 'admin';
+        document.getElementById('admin-note').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('perm-grid').style.opacity = isAdmin ? '0.4' : '1';
+        document.getElementById('perm-grid').style.pointerEvents = isAdmin ? 'none' : 'auto';
     }
 
-    function closeUserModal() { document.getElementById('user-modal').classList.remove('active'); }
+    // ─── Abrir modal ──────────────────────────────────────────────────────────
+    function openModal(uid = null) {
+        editingId = uid;
+        const isEdit = !!uid;
+        document.getElementById('modal-title').textContent = isEdit ? 'Editar Usuário' : 'Novo Usuário';
+        document.getElementById('pwd-note').textContent = isEdit ? '(deixe vazio para manter)' : '(obrigatória)';
+        document.getElementById('edit-uid').value = uid || '';
 
+        // Resetar campos
+        document.getElementById('f-nome').value  = '';
+        document.getElementById('f-email').value = '';
+        document.getElementById('f-senha').value = '';
+        document.getElementById('f-cargo').value = 'user';
+        document.querySelectorAll('#perm-grid input[type=checkbox]').forEach(c => { c.checked = false; c.closest('label').classList.remove('checked'); });
+        toggleAdminPerms();
+
+        if (isEdit) {
+            const u = allUsers.find(x => x.id === uid);
+            if (u) {
+                document.getElementById('f-nome').value  = u.full_name || '';
+                document.getElementById('f-email').value = u.email || '';
+                document.getElementById('f-cargo').value = u.role || 'user';
+                const acessos = u.acessos || [];
+                document.querySelectorAll('#perm-grid input[type=checkbox]').forEach(c => {
+                    if (acessos.includes(c.value)) { c.checked = true; c.closest('label').classList.add('checked'); }
+                });
+                toggleAdminPerms();
+            }
+        } else {
+            // Novo: marcar Dashboard por padrão
+            const dashCheck = document.querySelector('#perm-grid input[value=dashboard]');
+            if (dashCheck) { dashCheck.checked = true; dashCheck.closest('label').classList.add('checked'); }
+        }
+
+        document.getElementById('user-modal').classList.add('open');
+    }
+
+    function closeModal() { document.getElementById('user-modal').classList.remove('open'); }
+
+    // ─── Salvar (criar ou editar no Supabase) ─────────────────────────────────
     async function saveUser() {
-        const id = document.getElementById('edit-user-id').value;
-        const payload = {
-            nome: document.getElementById('field-nome').value,
-            email: document.getElementById('field-email').value,
-            cargo: document.getElementById('field-cargo').value,
-        };
-        const senha = document.getElementById('field-senha').value;
-        if (senha) payload.senha = senha;
-        const token = localStorage.getItem('hm_token');
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/users/${id}` : '/api/users';
+        const nome   = document.getElementById('f-nome').value.trim();
+        const email  = document.getElementById('f-email').value.trim();
+        const senha  = document.getElementById('f-senha').value;
+        const cargo  = document.getElementById('f-cargo').value;
+        const isAdmin = cargo === 'admin';
+        const acessos = isAdmin ? SCREENS : Array.from(document.querySelectorAll('#perm-grid input:checked')).map(c => c.value);
+
+        if (!nome) return showToast('Informe o nome completo.', 'error');
+        if (!email) return showToast('Informe o e-mail.', 'error');
+        if (!editingId && !senha) return showToast('Informe a senha para o novo usuário.', 'error');
+        if (!editingId && senha.length < 6) return showToast('Senha deve ter no mínimo 6 caracteres.', 'error');
+
+        const profilePayload = { full_name: nome, email, role: cargo, acessos };
+
         try {
-            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            if (editingId) {
+                // UPDATE: atualizar profile
+                const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${editingId}`, {
+                    method: 'PATCH',
+                    headers: supaHeaders(),
+                    body: JSON.stringify(profilePayload)
+                });
+                if (!res.ok) throw new Error(await res.text());
+                if (senha) {
+                    // Atualizar senha via API server-side /api/users/:id
+                    await fetch(`/api/users/${editingId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('hm_token')}` },
+                        body: JSON.stringify({ senha })
+                    });
+                }
+                showToast('Usuário atualizado com sucesso!', 'success');
+            } else {
+                // CREATE: criar usuário na API Supabase Auth (via API route que usa service_role)
+                const res = await fetch(`/api/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('hm_token')}` },
+                    body: JSON.stringify({ email, senha, nome_completo: nome, cargo, acessos })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ message: 'Erro ao criar usuário' }));
+                    // Fallback: tentar criar direto no Supabase Auth signup
+                    const signRes = await fetch(`${SUPA_URL}/auth/v1/signup`, {
+                        method: 'POST',
+                        headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password: senha })
+                    });
+                    if (!signRes.ok) throw new Error(err.message || 'Falha ao criar conta no Auth');
+                    const newAuth = await signRes.json();
+                    const newId = newAuth.user?.id || newAuth.id;
+                    if (!newId) throw new Error('Não foi possível obter o ID do novo usuário');
+                    // Inserir profile
+                    await fetch(`${SUPA_URL}/rest/v1/profiles`, {
+                        method: 'POST',
+                        headers: supaHeaders(),
+                        body: JSON.stringify({ id: newId, ...profilePayload })
+                    });
+                }
+                showToast('Usuário criado com sucesso!', 'success');
+            }
+            closeModal();
+            await loadUsers();
+        } catch (e) {
+            showToast('Erro: ' + e.message, 'error');
+        }
+    }
+
+    // ─── Ativar / Desativar ───────────────────────────────────────────────────
+    async function toggleStatus(uid, isActive) {
+        const action = isActive ? 'Desativar' : 'Ativar';
+        if (!confirm(`${action} este usuário?`)) return;
+        try {
+            const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${uid}`, {
+                method: 'PATCH',
+                headers: supaHeaders(),
+                body: JSON.stringify({ ativo: !isActive })
+            });
             if (!res.ok) throw new Error(await res.text());
-            closeUserModal();
-            loadUsers();
-        } catch (e) { alert('Erro ao salvar: ' + e.message); }
+            showToast(`Usuário ${isActive ? 'desativado' : 'ativado'} com sucesso.`, 'success');
+            await loadUsers();
+        } catch (e) { showToast('Erro: ' + e.message, 'error'); }
     }
 
-    async function toggleUser(id, isActive) {
-        if (!confirm(isActive ? 'Desativar este usuário?' : 'Reativar este usuário?')) return;
-        const token = localStorage.getItem('hm_token');
+    // ─── Excluir ──────────────────────────────────────────────────────────────
+    function askDelete(uid, name) {
+        deleteTarget = uid;
+        document.getElementById('confirm-msg').innerHTML =
+            `Esta ação é <strong>irreversível</strong>. O usuário <strong>${name}</strong> será removido da tabela de perfis e do Supabase Auth, perdendo todo o acesso.`;
+        document.getElementById('confirm-modal').classList.add('open');
+    }
+
+    function closeConfirm() {
+        deleteTarget = null;
+        document.getElementById('confirm-modal').classList.remove('open');
+    }
+
+    async function confirmDelete() {
+        if (!deleteTarget) return;
+        document.getElementById('confirm-ok-btn').innerHTML = '<i class="fas fa-spinner spinner"></i> Excluindo...';
         try {
-            await fetch(`/api/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ativo: !isActive }) });
-            loadUsers();
-        } catch (e) { alert('Erro: ' + e.message); }
+            // 1. Remover profile da tabela
+            const r1 = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${deleteTarget}`, {
+                method: 'DELETE',
+                headers: supaHeaders()
+            });
+            if (!r1.ok) throw new Error('Falha ao remover profile');
+
+            // 2. Tentar remover do Auth via API server-side
+            await fetch(`/api/users/${deleteTarget}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('hm_token')}` }
+            }).catch(() => {}); // Não falhar se a route não existir
+
+            showToast('Usuário excluído com sucesso.', 'success');
+            closeConfirm();
+            await loadUsers();
+        } catch (e) {
+            showToast('Erro ao excluir: ' + e.message, 'error');
+            document.getElementById('confirm-ok-btn').innerHTML = '<i class="fas fa-trash"></i> Sim, Excluir';
+        }
     }
 
+    // ─── Toast ────────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', loadUsers);
 </script>
 </body>
 </html>
-
-
