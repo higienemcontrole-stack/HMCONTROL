@@ -191,7 +191,7 @@ class Core {
 
     // --- MÉTODOS PÚBLICOS ---
 
-    // --- FUNÇÕES DE CONFIGURAÇÃO (v10.2.0) ---
+    // --- FUNÇÕES DE CONFIGURAÇÃO (v11.0.0) ---
 
     async syncDatabase() {
         try {
@@ -286,7 +286,7 @@ class Core {
             title: 'Logs de Auditoria',
             html: `
                 <div style="text-align: left; font-family: monospace; font-size: 11px; max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;">
-                    [${new Date().toLocaleTimeString()}] Sistema v10.2.0 verificado<br>
+                    [${new Date().toLocaleTimeString()}] Sistema v11.0.0 verificado<br>
                     [${new Date().toLocaleTimeString()}] Cache de dados: 1240 registros<br>
                     [${new Date().toLocaleTimeString()}] Sincronização: OK<br>
                     [${new Date().toLocaleTimeString()}] Z-Index Hardening aplicado<br>
@@ -681,3 +681,4 @@ class Core {
 }
 
 window.HM = new Core();
+

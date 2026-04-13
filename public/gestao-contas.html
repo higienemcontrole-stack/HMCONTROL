@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Gestão de Contas</title>
+    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .config-page { padding: 30px; background: #F2F2F2; min-height: calc(100vh - 60px); }
+        .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #365ba0; transform: translateY(-1px); }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .btn-sm { padding: 7px 14px; font-size: 12px; }
+        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+        .search-input { flex: 1; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .users-table { width: 100%; border-collapse: collapse; }
+        .users-table thead th { background: var(--excel-light-blue); padding: 12px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #8497b0; }
+        .users-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.15s; }
+        .users-table tbody tr:hover { background: #f8fafc; }
+        .users-table tbody td { padding: 14px 16px; font-size: 14px; color: #1e293b; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--excel-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .badge-role { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-admin { background: #dbeafe; color: #1d4ed8; }
+        .badge-user { background: #f0fdf4; color: #16a34a; }
+        .badge-status-on { background: #dcfce7; color: #16a34a; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .badge-status-off { background: #fee2e2; color: #dc2626; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .action-btns { display: flex; gap: 6px; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; display: block; }
+        /* Modal */
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); z-index: 9000; justify-content: center; align-items: center; }
+        .modal-backdrop.active { display: flex; }
+        .modal-box { background: white; border-radius: 14px; padding: 32px; width: 100%; max-width: 480px; box-shadow: 0 24px 48px rgba(0,0,0,0.2); }
+        .modal-box h3 { font-size: 20px; font-weight: 800; color: var(--excel-blue); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+        .form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
+        .form-field input, .form-field select { padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+        .form-field input:focus, .form-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+        .btn-cancel { padding: 10px 20px; background: #f1f5f9; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body style="background: #F2F2F2;">
+<div class="app-container">
+    <header class="navbar-superior">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link active"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="sistema.html" style="color:#ffffff!important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                    <a href="gestao-contas.html" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                    <a href="snapshots.html" style="color:#ffffff!important;"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                    <a href="metas.html" style="color:#ffffff!important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                    <a href="logs.html" style="color:#ffffff!important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                    <a href="manutencao.html" style="color:#ffffff!important;"><i class="fas fa-tools"></i> Manutenção</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user"><i class="fas fa-user-circle"></i></div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()"><i class="fas fa-user-cog"></i> Meu Perfil</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="config-page">
+        <div class="breadcrumb">
+            <a href="dashboard.html"><i class="fas fa-home"></i> Início</a>
+            <span>›</span><span>Configurações</span>
+            <span>›</span><span><strong>Gestão de Contas</strong></span>
+        </div>
+
+        <div class="page-header">
+            <div class="page-title"><i class="fas fa-users-cog" style="color:var(--excel-blue)"></i> Gestão de Contas</div>
+            <button class="btn-primary" onclick="openNewUserModal()"><i class="fas fa-user-plus"></i> Novo Usuário</button>
+        </div>
+
+        <div class="section-card">
+            <div class="search-bar">
+                <input class="search-input" type="text" id="search-users" placeholder="🔍  Buscar por nome ou e-mail..." oninput="filterUsers(this.value)">
+                <select id="filter-role" onchange="filterUsers()" style="padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                    <option value="">Todos os perfis</option>
+                    <option value="admin">Admin</option>
+                    <option value="user">Usuário</option>
+                </select>
+            </div>
+
+            <table class="users-table" id="users-table">
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>E-mail</th>
+                        <th>Perfil</th>
+                        <th>Status</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="users-tbody">
+                    <tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Carregando usuários...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Novo/Editar Usuário -->
+<div class="modal-backdrop" id="user-modal">
+    <div class="modal-box">
+        <h3><i class="fas fa-user-cog"></i> <span id="modal-title">Novo Usuário</span></h3>
+        <input type="hidden" id="edit-user-id">
+        <div class="form-field">
+            <label>Nome Completo</label>
+            <input type="text" id="field-nome" placeholder="Ex: João da Silva">
+        </div>
+        <div class="form-field">
+            <label>E-mail</label>
+            <input type="email" id="field-email" placeholder="email@hospital.com">
+        </div>
+        <div class="form-field">
+            <label>Senha <span id="pwd-hint" style="font-weight:400;text-transform:none;color:#94a3b8;">(deixe vazio para manter)</span></label>
+            <input type="password" id="field-senha" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="form-field">
+            <label>Perfil de Acesso</label>
+            <select id="field-cargo">
+                <option value="user">👤 Usuário</option>
+                <option value="admin">🛡️ Administrador</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeUserModal()">Cancelar</button>
+            <button class="btn-primary" onclick="saveUser()"><i class="fas fa-save"></i> Salvar</button>
+        </div>
+    </div>
+</div>
+
+<script src="src/js/core.js?v=11.0.0"></script>
+<script>
+    let allUsers = [];
+
+    async function loadUsers() {
+        const token = localStorage.getItem('hm_token');
+        try {
+            const res = await fetch('/api/users', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error('Erro ao carregar');
+            allUsers = await res.json();
+            renderUsers(allUsers);
+        } catch (e) {
+            document.getElementById('users-tbody').innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i>Não foi possível carregar os usuários.<br><small>${e.message}</small></div></td></tr>`;
+        }
+    }
+
+    function renderUsers(users) {
+        const tbody = document.getElementById('users-tbody');
+        if (!users.length) {
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users"></i>Nenhum usuário encontrado.</div></td></tr>`;
+            return;
+        }
+        tbody.innerHTML = users.map(u => {
+            const initials = (u.nome || u.email || '?').substring(0, 2).toUpperCase();
+            const createdAt = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—';
+            const statusBadge = u.ativo !== false ? '<span class="badge-status-on">● Ativo</span>' : '<span class="badge-status-off">● Inativo</span>';
+            const roleBadge = u.cargo === 'admin' ? '<span class="badge-role badge-admin">🛡️ Admin</span>' : '<span class="badge-role badge-user">👤 Usuário</span>';
+            return `<tr>
+                <td><div class="user-info"><div class="avatar">${initials}</div><strong>${u.nome || '—'}</strong></div></td>
+                <td>${u.email || '—'}</td>
+                <td>${roleBadge}</td>
+                <td>${statusBadge}</td>
+                <td>${createdAt}</td>
+                <td><div class="action-btns">
+                    <button class="btn-primary btn-sm" onclick="editUser('${u.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-primary btn-sm btn-danger" onclick="toggleUser('${u.id}', ${u.ativo !== false})">${u.ativo !== false ? '<i class="fas fa-ban"></i>' : '<i class="fas fa-check"></i>'}</button>
+                </div></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function filterUsers(val) {
+        const search = (document.getElementById('search-users').value || '').toLowerCase();
+        const role = document.getElementById('filter-role').value;
+        const filtered = allUsers.filter(u => {
+            const matchText = (u.nome || '').toLowerCase().includes(search) || (u.email || '').toLowerCase().includes(search);
+            const matchRole = !role || u.cargo === role;
+            return matchText && matchRole;
+        });
+        renderUsers(filtered);
+    }
+
+    function openNewUserModal() {
+        document.getElementById('modal-title').textContent = 'Novo Usuário';
+        document.getElementById('edit-user-id').value = '';
+        document.getElementById('field-nome').value = '';
+        document.getElementById('field-email').value = '';
+        document.getElementById('field-senha').value = '';
+        document.getElementById('field-cargo').value = 'user';
+        document.getElementById('pwd-hint').style.display = 'none';
+        document.getElementById('user-modal').classList.add('active');
+    }
+
+    function editUser(id) {
+        const u = allUsers.find(x => x.id == id);
+        if (!u) return;
+        document.getElementById('modal-title').textContent = 'Editar Usuário';
+        document.getElementById('edit-user-id').value = u.id;
+        document.getElementById('field-nome').value = u.nome || '';
+        document.getElementById('field-email').value = u.email || '';
+        document.getElementById('field-senha').value = '';
+        document.getElementById('field-cargo').value = u.cargo || 'user';
+        document.getElementById('pwd-hint').style.display = 'inline';
+        document.getElementById('user-modal').classList.add('active');
+    }
+
+    function closeUserModal() { document.getElementById('user-modal').classList.remove('active'); }
+
+    async function saveUser() {
+        const id = document.getElementById('edit-user-id').value;
+        const payload = {
+            nome: document.getElementById('field-nome').value,
+            email: document.getElementById('field-email').value,
+            cargo: document.getElementById('field-cargo').value,
+        };
+        const senha = document.getElementById('field-senha').value;
+        if (senha) payload.senha = senha;
+        const token = localStorage.getItem('hm_token');
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/users/${id}` : '/api/users';
+        try {
+            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(payload) });
+            if (!res.ok) throw new Error(await res.text());
+            closeUserModal();
+            loadUsers();
+        } catch (e) { alert('Erro ao salvar: ' + e.message); }
+    }
+
+    async function toggleUser(id, isActive) {
+        if (!confirm(isActive ? 'Desativar este usuário?' : 'Reativar este usuário?')) return;
+        const token = localStorage.getItem('hm_token');
+        try {
+            await fetch(`/api/users/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ativo: !isActive }) });
+            loadUsers();
+        } catch (e) { alert('Erro: ' + e.message); }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+</body>
+</html>
+

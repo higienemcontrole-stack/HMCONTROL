@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Manutenção</title>
+    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .config-page { padding: 30px; background: #F2F2F2; min-height: calc(100vh - 60px); }
+        .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
+        .actions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+        .action-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 24px; display: flex; flex-direction: column; gap: 12px; transition: 0.2s; cursor: pointer; }
+        .action-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .action-card.danger { border-color: #fecaca; background: #fff5f5; }
+        .action-card.danger:hover { border-color: #dc2626; }
+        .action-card.warning { border-color: #fde68a; background: #fffbeb; }
+        .action-card.warning:hover { border-color: #f59e0b; }
+        .action-card.safe { border-color: #bbf7d0; background: #f0fdf4; }
+        .action-card.safe:hover { border-color: #16a34a; }
+        .action-card.info { border-color: #bfdbfe; background: #eff6ff; }
+        .action-card.info:hover { border-color: #2563eb; }
+        .action-icon { font-size: 32px; }
+        .icon-red { color: #dc2626; }
+        .icon-orange { color: #f59e0b; }
+        .icon-green { color: #16a34a; }
+        .icon-blue { color: #2563eb; }
+        .action-title { font-size: 16px; font-weight: 800; color: #1e293b; }
+        .action-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
+        .action-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 4px; }
+        .btn-red { background: #dc2626; color: white; }
+        .btn-red:hover { background: #b91c1c; }
+        .btn-orange { background: #f59e0b; color: white; }
+        .btn-orange:hover { background: #d97706; }
+        .btn-green { background: #16a34a; color: white; }
+        .btn-green:hover { background: #15803d; }
+        .btn-blue { background: #2563eb; color: white; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .cache-list { font-family: monospace; font-size: 13px; background: #f8fafc; border-radius: 8px; padding: 16px; max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; }
+        .cache-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+        .cache-item:last-child { border-bottom: none; }
+        .cache-key { color: #475569; }
+        .cache-size { color: #94a3b8; font-size: 11px; }
+        .status-banner { padding: 14px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 14px; }
+        .banner-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .banner-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; display: none; }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .sysinfo-table { width: 100%; border-collapse: collapse; }
+        .sysinfo-table tr { border-bottom: 1px solid #f1f5f9; }
+        .sysinfo-table td { padding: 10px 8px; font-size: 14px; }
+        .sysinfo-table td:first-child { font-weight: 600; color: #64748b; width: 45%; }
+    </style>
+</head>
+<body style="background: #F2F2F2;">
+<div class="app-container">
+    <header class="navbar-superior">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link active"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="sistema.html" style="color:#ffffff!important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                    <a href="gestao-contas.html" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                    <a href="snapshots.html" style="color:#ffffff!important;"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                    <a href="metas.html" style="color:#ffffff!important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                    <a href="logs.html" style="color:#ffffff!important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                    <a href="manutencao.html" style="color:#ffffff!important;"><i class="fas fa-tools"></i> Manutenção</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user"><i class="fas fa-user-circle"></i></div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()"><i class="fas fa-user-cog"></i> Meu Perfil</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="config-page">
+        <div class="breadcrumb">
+            <a href="dashboard.html"><i class="fas fa-home"></i> Início</a>
+            <span>›</span><span>Configurações</span>
+            <span>›</span><span><strong>Manutenção & Cache</strong></span>
+        </div>
+
+        <div class="page-header">
+            <div class="page-title"><i class="fas fa-tools" style="color:var(--excel-blue)"></i> Manutenção & Cache</div>
+        </div>
+
+        <div class="status-banner banner-info" id="banner-info">
+            <i class="fas fa-info-circle"></i> Esta área é exclusiva para administradores. Use com cautela — algumas ações são irreversíveis.
+        </div>
+        <div class="status-banner banner-success" id="banner-success">
+            <i class="fas fa-check-circle"></i> <span id="banner-msg">Operação realizada com sucesso!</span>
+        </div>
+
+        <!-- Ações de Cache -->
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-memory" style="color:var(--excel-blue)"></i> Gerenciamento de Cache</div>
+            <div id="cache-list" class="cache-list" style="margin-bottom:16px;">Carregando cache...</div>
+            <div class="actions-grid">
+                <div class="action-card safe">
+                    <i class="fas fa-broom action-icon icon-green"></i>
+                    <div class="action-title">Limpar Cache de Sessão</div>
+                    <div class="action-desc">Remove dados temporários da sessão atual sem afetar configurações salvas.</div>
+                    <button class="action-btn btn-green" onclick="clearSession()"><i class="fas fa-eraser"></i> Limpar Sessão</button>
+                </div>
+                <div class="action-card warning">
+                    <i class="fas fa-database action-icon icon-orange"></i>
+                    <div class="action-title">Limpar Cache de Dados</div>
+                    <div class="action-desc">Remove os dados em cache do banco local (localStorage). Uma nova sincronização será necessária.</div>
+                    <button class="action-btn btn-orange" onclick="clearDataCache()"><i class="fas fa-sync"></i> Limpar Dados</button>
+                </div>
+                <div class="action-card danger">
+                    <i class="fas fa-trash-alt action-icon icon-red"></i>
+                    <div class="action-title">Limpar TUDO</div>
+                    <div class="action-desc">Remove todo o localStorage e sessionStorage. Você será desconectado automaticamente.</div>
+                    <button class="action-btn btn-red" onclick="clearAll()"><i class="fas fa-bomb"></i> Limpar Tudo</button>
+                </div>
+                <div class="action-card info">
+                    <i class="fas fa-redo action-icon icon-blue"></i>
+                    <div class="action-title">Recarregar Sistema</div>
+                    <div class="action-desc">Força o recarregamento da página e dos arquivos CSS/JS ignorando o cache do navegador.</div>
+                    <button class="action-btn btn-blue" onclick="hardReload()"><i class="fas fa-redo"></i> Hard Reload</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações do Sistema -->
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-microchip" style="color:var(--excel-blue)"></i> Informações do Sistema</div>
+            <table class="sysinfo-table">
+                <tr><td>Versão do App</td><td><strong>v11.0.0 (HM Control)</strong></td></tr>
+                <tr><td>Ambiente</td><td id="env-info">Carregando...</td></tr>
+                <tr><td>URL Base</td><td id="base-url">—</td></tr>
+                <tr><td>Itens em localStorage</td><td id="ls-count">—</td></tr>
+                <tr><td>Tamanho do localStorage</td><td id="ls-size">—</td></tr>
+                <tr><td>Último acesso</td><td id="last-access">—</td></tr>
+                <tr><td>User Agent</td><td id="user-agent" style="font-size:11px;color:#94a3b8;word-break:break-all;">—</td></tr>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="src/js/core.js?v=11.0.0"></script>
+<script>
+    function showSuccess(msg) {
+        const b = document.getElementById('banner-success');
+        document.getElementById('banner-msg').textContent = msg;
+        b.style.display = 'flex';
+        document.getElementById('banner-info').style.display = 'none';
+        setTimeout(() => { b.style.display = 'none'; document.getElementById('banner-info').style.display = 'flex'; }, 4000);
+    }
+
+    function loadCacheList() {
+        const container = document.getElementById('cache-list');
+        const keys = Object.keys(localStorage);
+        if (!keys.length) { container.innerHTML = '<span style="color:#94a3b8;">Cache vazio.</span>'; return; }
+        container.innerHTML = keys.map(k => {
+            const val = localStorage.getItem(k) || '';
+            const size = new Blob([val]).size;
+            return `<div class="cache-item"><span class="cache-key">${k}</span><span class="cache-size">${size} bytes</span></div>`;
+        }).join('');
+    }
+
+    function loadSystemInfo() {
+        document.getElementById('env-info').textContent = location.hostname.includes('vercel') ? '☁️ Produção (Vercel)' : '💻 Local (Desenvolvimento)';
+        document.getElementById('base-url').textContent = location.origin;
+        const keys = Object.keys(localStorage);
+        document.getElementById('ls-count').textContent = keys.length + ' item(s)';
+        const totalSize = keys.reduce((a, k) => a + new Blob([localStorage.getItem(k) || '']).size, 0);
+        document.getElementById('ls-size').textContent = totalSize < 1024 ? totalSize + ' bytes' : (totalSize / 1024).toFixed(1) + ' KB';
+        document.getElementById('last-access').textContent = new Date().toLocaleString('pt-BR');
+        document.getElementById('user-agent').textContent = navigator.userAgent;
+    }
+
+    function clearSession() {
+        sessionStorage.clear();
+        showSuccess('Cache de sessão limpo com sucesso.');
+        loadCacheList();
+        loadSystemInfo();
+    }
+
+    function clearDataCache() {
+        const keysToRemove = Object.keys(localStorage).filter(k => !['hm_token', 'hm_user', 'hm_metas', 'meta_global'].includes(k));
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+        showSuccess(`${keysToRemove.length} item(s) de dados removidos do cache.`);
+        loadCacheList();
+        loadSystemInfo();
+    }
+
+    function clearAll() {
+        if (!confirm('ATENÇÃO: Isso irá desconectar você do sistema. Continuar?')) return;
+        localStorage.clear();
+        sessionStorage.clear();
+        setTimeout(() => location.href = 'login.html', 500);
+    }
+
+    function hardReload() {
+        location.reload(true);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadCacheList();
+        loadSystemInfo();
+    });
+</script>
+</body>
+</html>
+

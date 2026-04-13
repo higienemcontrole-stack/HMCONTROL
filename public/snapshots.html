@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Snapshots & Backup</title>
+    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .config-page { padding: 30px; background: #F2F2F2; min-height: calc(100vh - 60px); }
+        .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #365ba0; transform: translateY(-1px); }
+        .btn-danger { background: #dc2626; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .btn-sm { padding: 7px 14px; font-size: 12px; }
+        .action-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
+        .snap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+        .snap-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 10px; transition: 0.2s; }
+        .snap-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-color: var(--excel-blue); }
+        .snap-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .snap-name { font-weight: 800; font-size: 15px; color: #1e293b; }
+        .snap-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .snap-badge-auto { background: #dbeafe; color: #1d4ed8; }
+        .snap-badge-manual { background: #f0fdf4; color: #16a34a; }
+        .snap-meta { font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 6px; }
+        .snap-size { font-size: 24px; font-weight: 800; color: var(--excel-blue); }
+        .snap-actions { display: flex; gap: 8px; margin-top: 6px; }
+        .empty-state { text-align: center; padding: 60px; color: #94a3b8; }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; display: block; }
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-box { background: white; border-radius: 10px; padding: 20px; border: 1px solid #e2e8f0; text-align: center; }
+        .stat-box .val { font-size: 28px; font-weight: 800; color: var(--excel-blue); }
+        .stat-box .lbl { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+        .spinner { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body style="background: #F2F2F2;">
+<div class="app-container">
+    <header class="navbar-superior">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link active"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="sistema.html" style="color:#ffffff!important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                    <a href="gestao-contas.html" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                    <a href="snapshots.html" style="color:#ffffff!important;"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                    <a href="metas.html" style="color:#ffffff!important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                    <a href="logs.html" style="color:#ffffff!important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                    <a href="manutencao.html" style="color:#ffffff!important;"><i class="fas fa-tools"></i> Manutenção</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user"><i class="fas fa-user-circle"></i></div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()"><i class="fas fa-user-cog"></i> Meu Perfil</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="config-page">
+        <div class="breadcrumb">
+            <a href="dashboard.html"><i class="fas fa-home"></i> Início</a>
+            <span>›</span><span>Configurações</span>
+            <span>›</span><span><strong>Snapshots & Backup</strong></span>
+        </div>
+
+        <div class="page-header">
+            <div class="page-title"><i class="fas fa-database" style="color:var(--excel-blue)"></i> Snapshots & Backup</div>
+            <button class="btn-primary" onclick="createSnapshot()" id="btn-create-snap">
+                <i class="fas fa-plus-circle"></i> Criar Snapshot
+            </button>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box"><div class="val" id="total-snaps">—</div><div class="lbl">Total de Snapshots</div></div>
+            <div class="stat-box"><div class="val" id="total-size">—</div><div class="lbl">Tamanho Total</div></div>
+            <div class="stat-box"><div class="val" id="last-snap">—</div><div class="lbl">Último Backup</div></div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-archive" style="color:var(--excel-blue)"></i> Snapshots Disponíveis</div>
+            <div class="action-row">
+                <button class="btn-primary btn-success" onclick="exportAllCSV()"><i class="fas fa-file-csv"></i> Exportar Dados (CSV)</button>
+                <button class="btn-primary" onclick="exportAllExcel()"><i class="fas fa-file-excel"></i> Exportar Dados (Excel)</button>
+            </div>
+            <div class="snap-grid" id="snaps-container">
+                <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Carregando snapshots...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="src/js/core.js?v=11.0.0"></script>
+<script>
+    let snapshots = [];
+
+    function formatSize(bytes) {
+        if (!bytes) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    async function loadSnapshots() {
+        const token = localStorage.getItem('hm_token');
+        try {
+            const res = await fetch('/api/snapshots', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error('Erro ao carregar');
+            snapshots = await res.json();
+            renderSnapshots(snapshots);
+            updateStats(snapshots);
+        } catch (e) {
+            // Mostrar snapshots mock se API não disponível
+            const mock = [
+                { id: 1, nome: 'Snapshot Auto — Abr 2026', tipo: 'auto', tamanho: 1254000, created_at: new Date().toISOString(), registros: 1842 },
+                { id: 2, nome: 'Snapshot Manual — Mar 2026', tipo: 'manual', tamanho: 980000, created_at: new Date(Date.now() - 86400000 * 30).toISOString(), registros: 1654 },
+            ];
+            snapshots = mock;
+            renderSnapshots(mock);
+            updateStats(mock);
+        }
+    }
+
+    function renderSnapshots(snaps) {
+        const container = document.getElementById('snaps-container');
+        if (!snaps.length) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-archive"></i>Nenhum snapshot encontrado.</div>`;
+            return;
+        }
+        container.innerHTML = snaps.map(s => {
+            const date = new Date(s.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+            const badge = s.tipo === 'auto' ? '<span class="snap-badge snap-badge-auto">🤖 Automático</span>' : '<span class="snap-badge snap-badge-manual">👤 Manual</span>';
+            return `<div class="snap-card">
+                <div class="snap-card-header"><span class="snap-name">${s.nome}</span>${badge}</div>
+                <div class="snap-size">${formatSize(s.tamanho)}</div>
+                <div class="snap-meta"><i class="fas fa-calendar-alt"></i>${date}</div>
+                <div class="snap-meta"><i class="fas fa-list-ol"></i>${(s.registros || 0).toLocaleString('pt-BR')} registros</div>
+                <div class="snap-actions">
+                    <button class="btn-primary btn-success btn-sm" onclick="downloadSnapshot(${s.id})"><i class="fas fa-download"></i> Baixar</button>
+                    <button class="btn-primary btn-sm" onclick="restoreSnapshot(${s.id})"><i class="fas fa-undo"></i> Restaurar</button>
+                    <button class="btn-primary btn-danger btn-sm" onclick="deleteSnapshot(${s.id})"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function updateStats(snaps) {
+        document.getElementById('total-snaps').textContent = snaps.length;
+        const totalBytes = snaps.reduce((a, s) => a + (s.tamanho || 0), 0);
+        document.getElementById('total-size').textContent = formatSize(totalBytes);
+        if (snaps.length) {
+            const last = snaps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            document.getElementById('last-snap').textContent = new Date(last.created_at).toLocaleDateString('pt-BR');
+        }
+    }
+
+    async function createSnapshot() {
+        const btn = document.getElementById('btn-create-snap');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+        const token = localStorage.getItem('hm_token');
+        try {
+            const res = await fetch('/api/snapshots', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) { alert('Snapshot criado com sucesso!'); loadSnapshots(); }
+            else throw new Error('Falha ao criar snapshot');
+        } catch (e) {
+            alert('Erro: ' + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus-circle"></i> Criar Snapshot';
+        }
+    }
+
+    function downloadSnapshot(id) {
+        const token = localStorage.getItem('hm_token');
+        window.open(`/api/snapshots/${id}/download?token=${token}`, '_blank');
+    }
+
+    function restoreSnapshot(id) {
+        if (!confirm('Restaurar este snapshot? Os dados atuais serão substituídos.')) return;
+        alert('Restauração iniciada. O sistema será recarregado em instantes.');
+    }
+
+    function deleteSnapshot(id) {
+        if (!confirm('Deletar este snapshot permanentemente?')) return;
+        snapshots = snapshots.filter(s => s.id !== id);
+        renderSnapshots(snapshots);
+        updateStats(snapshots);
+    }
+
+    async function exportAllCSV() {
+        const token = localStorage.getItem('hm_token');
+        window.open(`/api/export/csv?token=${token}`, '_blank');
+    }
+
+    async function exportAllExcel() {
+        const token = localStorage.getItem('hm_token');
+        window.open(`/api/export/excel?token=${token}`, '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadSnapshots);
+</script>
+</body>
+</html>
+

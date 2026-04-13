@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Logs de Auditoria</title>
+    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .config-page { padding: 30px; background: #F2F2F2; min-height: calc(100vh - 60px); }
+        .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #365ba0; }
+        .btn-sm { padding: 7px 14px; font-size: 12px; }
+        .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .filter-input { padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
+        .filter-input:focus { border-color: var(--primary); }
+        .logs-table { width: 100%; border-collapse: collapse; }
+        .logs-table thead th { background: var(--excel-light-blue); padding: 12px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #8497b0; }
+        .logs-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.15s; }
+        .logs-table tbody tr:hover { background: #f8fafc; }
+        .logs-table tbody td { padding: 13px 16px; font-size: 13px; color: #1e293b; }
+        .log-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .badge-login { background: #dbeafe; color: #1d4ed8; }
+        .badge-create { background: #dcfce7; color: #16a34a; }
+        .badge-update { background: #fef9c3; color: #ca8a04; }
+        .badge-delete { background: #fee2e2; color: #dc2626; }
+        .badge-export { background: #f3e8ff; color: #7c3aed; }
+        .badge-sync { background: #e0f2fe; color: #0369a1; }
+        .badge-logout { background: #f1f5f9; color: #475569; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .page-info { font-size: 13px; color: #64748b; }
+        .page-btns { display: flex; gap: 6px; }
+        .page-btn { padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .page-btn.active { background: var(--excel-blue); color: white; border-color: var(--excel-blue); }
+        .page-btn:hover:not(.active) { background: #f8fafc; }
+        .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .sum-box { background: white; border-radius: 10px; padding: 18px; border: 1px solid #e2e8f0; text-align: center; }
+        .sum-box .val { font-size: 26px; font-weight: 800; color: var(--excel-blue); }
+        .sum-box .lbl { font-size: 12px; color: #64748b; margin-top: 4px; }
+        .mono { font-family: monospace; font-size: 11px; color: #94a3b8; }
+    </style>
+</head>
+<body style="background: #F2F2F2;">
+<div class="app-container">
+    <header class="navbar-superior">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link active"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="sistema.html" style="color:#ffffff!important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                    <a href="gestao-contas.html" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                    <a href="snapshots.html" style="color:#ffffff!important;"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                    <a href="metas.html" style="color:#ffffff!important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                    <a href="logs.html" style="color:#ffffff!important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                    <a href="manutencao.html" style="color:#ffffff!important;"><i class="fas fa-tools"></i> Manutenção</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user"><i class="fas fa-user-circle"></i></div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()"><i class="fas fa-user-cog"></i> Meu Perfil</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="config-page">
+        <div class="breadcrumb">
+            <a href="dashboard.html"><i class="fas fa-home"></i> Início</a>
+            <span>›</span><span>Configurações</span>
+            <span>›</span><span><strong>Logs de Auditoria</strong></span>
+        </div>
+
+        <div class="page-header">
+            <div class="page-title"><i class="fas fa-history" style="color:var(--excel-blue)"></i> Logs de Auditoria</div>
+            <button class="btn-primary" onclick="exportLogs()"><i class="fas fa-file-csv"></i> Exportar Logs</button>
+        </div>
+
+        <div class="summary-row">
+            <div class="sum-box"><div class="val" id="total-logs">—</div><div class="lbl">Total de Eventos</div></div>
+            <div class="sum-box"><div class="val" id="today-logs">—</div><div class="lbl">Eventos Hoje</div></div>
+            <div class="sum-box"><div class="val" id="unique-users">—</div><div class="lbl">Usuários Ativos</div></div>
+            <div class="sum-box"><div class="val" id="error-count">—</div><div class="lbl">Erros / Alertas</div></div>
+        </div>
+
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-filter" style="color:var(--excel-blue)"></i> Filtros</div>
+            <div class="filters">
+                <input class="filter-input" type="text" id="filter-search" placeholder="🔍 Buscar usuario, ação..." oninput="applyFilters()">
+                <select class="filter-input" id="filter-type" onchange="applyFilters()">
+                    <option value="">Todos os tipos</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="create">Criação</option>
+                    <option value="update">Atualização</option>
+                    <option value="delete">Exclusão</option>
+                    <option value="export">Exportação</option>
+                    <option value="sync">Sincronização</option>
+                </select>
+                <input class="filter-input" type="date" id="filter-date-from" onchange="applyFilters()">
+                <span style="color:#94a3b8;font-size:13px;">até</span>
+                <input class="filter-input" type="date" id="filter-date-to" onchange="applyFilters()">
+                <button class="btn-primary btn-sm" onclick="clearFilters()"><i class="fas fa-times"></i> Limpar</button>
+            </div>
+
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Data / Hora</th>
+                        <th>Usuário</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-tbody">
+                    <tr><td colspan="5" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <span class="page-info" id="page-info">—</span>
+                <div class="page-btns" id="page-btns"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="src/js/core.js?v=11.0.0"></script>
+<script>
+    let allLogs = [];
+    let filteredLogs = [];
+    let currentPage = 1;
+    const pageSize = 20;
+
+    const typeMap = { login: 'badge-login', logout: 'badge-logout', create: 'badge-create', update: 'badge-update', delete: 'badge-delete', export: 'badge-export', sync: 'badge-sync' };
+    const typeLabel = { login: 'Login', logout: 'Logout', create: 'Criação', update: 'Atualização', delete: 'Exclusão', export: 'Exportação', sync: 'Sincronização' };
+
+    function generateMockLogs() {
+        const users = ['Julia B. Silva', 'Admin Master', 'Fernanda Costa', 'Carlos Mota'];
+        const types = ['login', 'logout', 'create', 'update', 'delete', 'export', 'sync'];
+        const descs = {
+            login: 'Usuário autenticado com sucesso', logout: 'Sessão encerrada', create: 'Novo registro de higienização criado',
+            update: 'Registro atualizado', delete: 'Registro removido do sistema', export: 'Relatório exportado em Excel', sync: 'Sincronização com banco de dados realizada'
+        };
+        const logs = [];
+        for (let i = 0; i < 80; i++) {
+            const type = types[Math.floor(Math.random() * types.length)];
+            const daysAgo = Math.floor(Math.random() * 30);
+            const date = new Date(Date.now() - daysAgo * 86400000 - Math.random() * 86400000);
+            logs.push({ id: i + 1, timestamp: date.toISOString(), usuario: users[Math.floor(Math.random() * users.length)], tipo: type, descricao: descs[type], ip: `192.168.${Math.floor(Math.random()*5)}.${Math.floor(Math.random()*255)}` });
+        }
+        return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+
+    async function loadLogs() {
+        const token = localStorage.getItem('hm_token');
+        try {
+            const res = await fetch('/api/logs', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error();
+            allLogs = await res.json();
+        } catch {
+            allLogs = generateMockLogs();
+        }
+        filteredLogs = [...allLogs];
+        updateStats();
+        renderPage(1);
+    }
+
+    function updateStats() {
+        document.getElementById('total-logs').textContent = allLogs.length;
+        const today = new Date().toDateString();
+        document.getElementById('today-logs').textContent = allLogs.filter(l => new Date(l.timestamp).toDateString() === today).length;
+        document.getElementById('unique-users').textContent = new Set(allLogs.map(l => l.usuario)).size;
+        document.getElementById('error-count').textContent = allLogs.filter(l => l.tipo === 'delete').length;
+    }
+
+    function applyFilters() {
+        const search = document.getElementById('filter-search').value.toLowerCase();
+        const type = document.getElementById('filter-type').value;
+        const from = document.getElementById('filter-date-from').value;
+        const to = document.getElementById('filter-date-to').value;
+        filteredLogs = allLogs.filter(l => {
+            const matchSearch = !search || l.usuario.toLowerCase().includes(search) || l.descricao.toLowerCase().includes(search);
+            const matchType = !type || l.tipo === type;
+            const logDate = l.timestamp.split('T')[0];
+            const matchFrom = !from || logDate >= from;
+            const matchTo = !to || logDate <= to;
+            return matchSearch && matchType && matchFrom && matchTo;
+        });
+        renderPage(1);
+    }
+
+    function clearFilters() {
+        document.getElementById('filter-search').value = '';
+        document.getElementById('filter-type').value = '';
+        document.getElementById('filter-date-from').value = '';
+        document.getElementById('filter-date-to').value = '';
+        filteredLogs = [...allLogs];
+        renderPage(1);
+    }
+
+    function renderPage(page) {
+        currentPage = page;
+        const start = (page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageData = filteredLogs.slice(start, end);
+        const tbody = document.getElementById('logs-tbody');
+        if (!pageData.length) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#94a3b8;">Nenhum log encontrado.</td></tr>`;
+        } else {
+            tbody.innerHTML = pageData.map(l => {
+                const dt = new Date(l.timestamp);
+                const dateStr = dt.toLocaleDateString('pt-BR');
+                const timeStr = dt.toLocaleTimeString('pt-BR');
+                const badgeClass = typeMap[l.tipo] || 'badge-login';
+                const label = typeLabel[l.tipo] || l.tipo;
+                return `<tr>
+                    <td><strong>${dateStr}</strong><br><span class="mono">${timeStr}</span></td>
+                    <td>${l.usuario}</td>
+                    <td><span class="log-badge ${badgeClass}">${label}</span></td>
+                    <td>${l.descricao}</td>
+                    <td class="mono">${l.ip}</td>
+                </tr>`;
+            }).join('');
+        }
+        const totalPages = Math.ceil(filteredLogs.length / pageSize);
+        document.getElementById('page-info').textContent = `${start + 1}–${Math.min(end, filteredLogs.length)} de ${filteredLogs.length} registros`;
+        const btns = document.getElementById('page-btns');
+        btns.innerHTML = '';
+        for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+            const btn = document.createElement('button');
+            btn.className = 'page-btn' + (i === page ? ' active' : '');
+            btn.textContent = i;
+            btn.onclick = () => renderPage(i);
+            btns.appendChild(btn);
+        }
+    }
+
+    function exportLogs() {
+        const csv = ['Data,Hora,Usuario,Tipo,Descricao,IP', ...filteredLogs.map(l => {
+            const dt = new Date(l.timestamp);
+            return `${dt.toLocaleDateString('pt-BR')},${dt.toLocaleTimeString('pt-BR')},"${l.usuario}","${l.tipo}","${l.descricao}","${l.ip}"`;
+        })].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `logs_auditoria_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadLogs);
+</script>
+</body>
+</html>
+

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HM Control — Configurar Metas</title>
+    <link rel="stylesheet" href="src/styles/design-system.css?v=11.0.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .config-page { padding: 30px; background: #F2F2F2; min-height: calc(100vh - 60px); }
+        .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .breadcrumb a { color: var(--primary); text-decoration: none; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #365ba0; transform: translateY(-1px); }
+        .btn-success { background: #16a34a; }
+        .btn-success:hover { background: #15803d; }
+        .metas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+        .meta-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 24px; }
+        .meta-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .meta-unit { font-size: 16px; font-weight: 800; color: #1e293b; }
+        .meta-period { font-size: 12px; color: #94a3b8; background: #f1f5f9; padding: 3px 10px; border-radius: 20px; }
+        .meta-slider-wrap { display: flex; flex-direction: column; gap: 8px; }
+        .meta-label { display: flex; justify-content: space-between; font-size: 13px; color: #64748b; font-weight: 600; }
+        .meta-value { font-size: 22px; font-weight: 800; text-align: center; }
+        .meta-value.green { color: #16a34a; }
+        .meta-value.orange { color: #f59e0b; }
+        .meta-value.red { color: #dc2626; }
+        input[type=range] { width: 100%; accent-color: var(--excel-blue); }
+        .progress-bar-bg { background: #e2e8f0; border-radius: 8px; height: 8px; margin-top: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.3s; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
+        .form-field input, .form-field select { padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+        .form-field input:focus, .form-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .global-meta { display: flex; align-items: center; gap: 20px; padding: 20px; background: linear-gradient(135deg, var(--excel-blue), #6366f1); border-radius: 12px; color: white; margin-bottom: 24px; }
+        .global-meta-val { font-size: 48px; font-weight: 900; }
+        .global-meta-info { display: flex; flex-direction: column; gap: 4px; }
+        .global-meta-label { font-size: 14px; opacity: 0.8; }
+        .global-meta-sub { font-size: 12px; opacity: 0.6; }
+        .action-row { display: flex; gap: 12px; margin-top: 20px; }
+    </style>
+</head>
+<body style="background: #F2F2F2;">
+<div class="app-container">
+    <header class="navbar-superior">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+        <div class="nav-brand">HM CONTROL</div>
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fas fa-home"></i> HOME</a>
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-chart-bar"></i> DASHBOARD</a>
+            <a href="registro.html" class="nav-link"><i class="fas fa-edit"></i> REGISTRO</a>
+            <a href="tabulacao.html" class="nav-link"><i class="fas fa-table"></i> TABULAÇÃO</a>
+            <a href="dinamica.html" class="nav-link"><i class="fas fa-sync"></i> DINÂMICA</a>
+            <a href="validacoes.html" class="nav-link"><i class="fas fa-check-double"></i> VALIDAÇÕES</a>
+            <div class="nav-dropdown">
+                <a href="javascript:void(0)" class="nav-link active"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
+                <div class="nav-dropdown-content">
+                    <a href="sistema.html" style="color:#ffffff!important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                    <a href="gestao-contas.html" style="color:#ffffff!important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                    <a href="snapshots.html" style="color:#ffffff!important;"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                    <a href="metas.html" style="color:#ffffff!important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                    <a href="logs.html" style="color:#ffffff!important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                    <a href="manutencao.html" style="color:#ffffff!important;"><i class="fas fa-tools"></i> Manutenção</a>
+                </div>
+            </div>
+        </nav>
+        <div class="nav-user-container" id="user-menu-trigger" onclick="HM.toggleUserMenu(event)">
+            <div class="nav-user"><i class="fas fa-user-circle"></i></div>
+            <span class="user-name" id="display-user-name">Usuário</span>
+            <div class="dropdown-menu" id="user-dropdown">
+                <button class="dropdown-item" onclick="HM.openProfileModal()"><i class="fas fa-user-cog"></i> Meu Perfil</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="HM.logout()" style="color:var(--danger);"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </div>
+    </header>
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <main class="config-page">
+        <div class="breadcrumb">
+            <a href="dashboard.html"><i class="fas fa-home"></i> Início</a>
+            <span>›</span><span>Configurações</span>
+            <span>›</span><span><strong>Configurar Metas</strong></span>
+        </div>
+
+        <div class="page-header">
+            <div class="page-title"><i class="fas fa-bullseye" style="color:var(--excel-blue)"></i> Configurar Metas</div>
+        </div>
+
+        <!-- Meta Global -->
+        <div class="global-meta">
+            <div style="font-size:40px;"><i class="fas fa-trophy"></i></div>
+            <div>
+                <div class="global-meta-label">Meta Global de Higienização</div>
+                <div class="global-meta-val"><span id="global-meta-val">80</span>%</div>
+                <div class="global-meta-sub">Aplicada a todas as unidades sem meta específica</div>
+            </div>
+            <div style="flex:1;padding-left:20px;">
+                <input type="range" min="50" max="100" value="80" id="slider-global" oninput="updateGlobal(this.value)" style="width:100%;">
+            </div>
+        </div>
+
+        <!-- Nova Meta por Unidade -->
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-plus-circle" style="color:var(--excel-blue)"></i> Definir Meta por Unidade</div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Unidade Hospitalar</label>
+                    <select id="meta-unidade">
+                        <option value="">Selecione...</option>
+                        <option>UTI - GERAL</option>
+                        <option>UTI - NEONATAL</option>
+                        <option>CME</option>
+                        <option>CLÍNICA MÉDICA</option>
+                        <option>PRONTO SOCORRO</option>
+                        <option>CENTRO CIRÚRGICO</option>
+                        <option>PEDIATRIA</option>
+                        <option>MATERNIDADE</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Período de Vigência</label>
+                    <select id="meta-periodo">
+                        <option value="mensal">Mensal</option>
+                        <option value="trimestral">Trimestral</option>
+                        <option value="semestral">Semestral</option>
+                        <option value="anual">Anual</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>Meta de Higienização (%)</label>
+                    <input type="number" id="meta-percentual" min="0" max="100" value="85" placeholder="Ex: 85">
+                </div>
+                <div class="form-field">
+                    <label>Meta de Conformidade (%)</label>
+                    <input type="number" id="meta-conformidade" min="0" max="100" value="90" placeholder="Ex: 90">
+                </div>
+            </div>
+            <div class="action-row">
+                <button class="btn-primary btn-success" onclick="addMeta()"><i class="fas fa-save"></i> Salvar Meta</button>
+            </div>
+        </div>
+
+        <!-- Metas Existentes -->
+        <div class="section-card">
+            <div class="section-title"><i class="fas fa-list-ul" style="color:var(--excel-blue)"></i> Metas por Unidade</div>
+            <div class="metas-grid" id="metas-grid">
+                <div style="text-align:center;padding:40px;color:#94a3b8;grid-column:1/-1;"><i class="fas fa-spinner fa-spin" style="font-size:32px;"></i><br>Carregando metas...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="src/js/core.js?v=11.0.0"></script>
+<script>
+    let metas = [];
+
+    function updateGlobal(val) {
+        document.getElementById('global-meta-val').textContent = val;
+        localStorage.setItem('meta_global', val);
+    }
+
+    function getMetaColor(val) {
+        if (val >= 85) return 'green';
+        if (val >= 70) return 'orange';
+        return 'red';
+    }
+
+    function renderMetas() {
+        const grid = document.getElementById('metas-grid');
+        if (!metas.length) {
+            grid.innerHTML = `<div style="text-align:center;padding:40px;color:#94a3b8;grid-column:1/-1;"><i class="fas fa-bullseye" style="font-size:40px;margin-bottom:12px;display:block;"></i>Nenhuma meta específica por unidade definida.<br>Use o formulário acima para adicionar.</div>`;
+            return;
+        }
+        grid.innerHTML = metas.map((m, i) => {
+            const colorClass = getMetaColor(m.higienizacao);
+            return `<div class="meta-card">
+                <div class="meta-card-header">
+                    <span class="meta-unit">${m.unidade}</span>
+                    <span class="meta-period">${m.periodo}</span>
+                </div>
+                <div class="meta-slider-wrap">
+                    <div class="meta-label"><span>Higienização</span><span>${m.higienizacao}%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${m.higienizacao}%"></div></div>
+                    <div class="meta-label" style="margin-top:10px;"><span>Conformidade</span><span>${m.conformidade}%</span></div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${m.conformidade}%;background:linear-gradient(90deg,#2563eb,#6366f1)"></div></div>
+                </div>
+                <div class="action-row" style="margin-top:12px;">
+                    <button class="btn-primary" style="padding:7px 14px;font-size:12px;" onclick="removeMeta(${i})"><i class="fas fa-trash"></i> Remover</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function addMeta() {
+        const unidade = document.getElementById('meta-unidade').value;
+        const periodo = document.getElementById('meta-periodo').value;
+        const higienizacao = parseInt(document.getElementById('meta-percentual').value);
+        const conformidade = parseInt(document.getElementById('meta-conformidade').value);
+        if (!unidade) { alert('Selecione uma unidade.'); return; }
+        if (isNaN(higienizacao) || higienizacao < 0 || higienizacao > 100) { alert('Percentual de higienização inválido.'); return; }
+        metas.push({ unidade, periodo, higienizacao, conformidade });
+        saveMetas();
+        renderMetas();
+    }
+
+    function removeMeta(index) {
+        metas.splice(index, 1);
+        saveMetas();
+        renderMetas();
+    }
+
+    function saveMetas() {
+        localStorage.setItem('hm_metas', JSON.stringify(metas));
+    }
+
+    function loadMetas() {
+        const savedGlobal = localStorage.getItem('meta_global') || '80';
+        document.getElementById('slider-global').value = savedGlobal;
+        document.getElementById('global-meta-val').textContent = savedGlobal;
+        const saved = localStorage.getItem('hm_metas');
+        metas = saved ? JSON.parse(saved) : [];
+        renderMetas();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadMetas);
+</script>
+</body>
+</html>
+
