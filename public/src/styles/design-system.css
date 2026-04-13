@@ -323,19 +323,21 @@ body.menu-open .menu-overlay {
     animation: fadeInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* SELETOR DE ALTA ESPECIFICIDADE PARA FORÇAR BRANCO v4.1.2 */
+/* --- DESIGN MASTER v6.0.0 (GLASSMORPHISM ESTABILIZADO) --- */
 .navbar-superior .nav-links .nav-dropdown .nav-dropdown-content a {
     padding: 16px 25px !important;
-    color: #ffffff !important; 
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important; /* BRANCO ABSOLUTO FORÇADO */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
     font-size: 14px !important;
-    font-weight: 600 !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important; /* Contraste extra */
+    font-weight: 700 !important; /* MAIOR PESO PARA CLAREZA */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8) !important; /* CONTRASTE MESTRE */
     display: flex !important;
     align-items: center !important;
     gap: 15px !important;
     transition: 0.3s all;
     text-decoration: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .nav-dropdown-content a i {
@@ -453,21 +455,7 @@ body.menu-open .menu-overlay {
     flex-direction: column;
     padding: 8px 0;
 }
-.nav-dropdown-content a {
-    color: #475569;
-    padding: 10px 16px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: 0.2s;
-}
-.nav-dropdown-content a:hover {
-    background-color: #f1f5f9;
-    color: var(--primary);
-}
+/* BLOCO LEGADO REMOVIDO EM v6.0.0 PARA EVITAR CONFLITOS DE COR */
 .nav-dropdown:hover .nav-dropdown-content {
     display: flex;
 }
