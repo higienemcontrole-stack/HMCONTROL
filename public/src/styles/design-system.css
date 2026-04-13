@@ -433,6 +433,22 @@ body.menu-open .menu-overlay {
 }
 
 /* --- FIM DA REESCRITA v8.0.0 --- */
+
+/* --- REGRA MESTRE DE LEGIBILIDADE v9.0.0 --- */
+.nav-dropdown-content a, 
+.nav-dropdown-content a *,
+.sidebar-lateral a,
+.sidebar-lateral a *,
+.nav-link,
+.nav-link * {
+    color: #ffffff !important; /* BRANCO ABSOLUTO FORÇADO - SEM EXCEÇÕES */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+}
+
+.nav-dropdown-content a:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
 .nav-dropdown:hover .nav-dropdown-content {
     display: flex;
 }
@@ -605,7 +621,7 @@ body.menu-open .menu-overlay {
 .profile-field-group label {
     font-size: 12px;
     font-weight: 600;
-    color: #475569;
+    color: var(--primary); /* Substituído #475569 por primary para evitar conflitos */
 }
 
 .profile-input {
@@ -675,7 +691,7 @@ body.menu-open .menu-overlay {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #475569;
+    color: var(--primary); /* Substituído #475569 por primary para evitar conflitos */
 }
 
 .input-control {
@@ -792,7 +808,7 @@ body.menu-open .menu-overlay {
 
 .data-pill {
     background: #F1F5F9;
-    color: #475569;
+    color: var(--primary); /* Substituído #475569 por primary para evitar conflitos */
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 12px;
