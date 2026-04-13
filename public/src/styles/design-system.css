@@ -386,7 +386,7 @@ body.menu-open .menu-overlay {
     color: white;
     font-size: 24px;
     cursor: pointer;
-    z-index: 6000;
+    z-index: 100001 !important; /* Acima de TUDO, incluindo Sidebar e Flyout */
 }
 
 @media (max-width: 1024px) {

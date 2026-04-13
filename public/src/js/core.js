@@ -1,4 +1,4 @@
-/* HM CONTROL - Core Orchestrator (v3.23.4 - Sidebar Refined) */
+/* HM CONTROL - Core Orchestrator (v3.23.5 - Interaction Stabilized) */
 
 const CORE_CONFIG = {
     API_BASE: window.location.origin
@@ -10,7 +10,7 @@ class Core {
         this.token = localStorage.getItem('hm_token') || null;
         this.elements = {}; 
         
-        console.log('[Core] Sistema v3.23.4 Iniciado.');
+        console.log('[Core] Sistema v3.23.5 Iniciado.');
         this.observeDOM();
         
         if (document.readyState !== 'loading') {
@@ -129,12 +129,14 @@ class Core {
                 }
             });
 
-            // Menu Mobile (Responsivo)
+            // Menu Mobile (Responsivo) - Lógica v3.23.5
             const navLinks = document.querySelector('.nav-links');
-            const mobileTrigger = document.getElementById('mobile-menu-toggle');
-            if (navLinks && navLinks.classList.contains('active') && mobileTrigger) {
-                if (!mobileTrigger.contains(e.target) && !navLinks.contains(e.target)) {
-                    navLinks.classList.remove('active');
+            const mobileTrigger = document.getElementById('mobile-menu-btn');
+            
+            if (navLinks && navLinks.classList.contains('active')) {
+                // SÓ FECHA se clicar FORA da sidebar E fora do botão de gatilho
+                if (!mobileTrigger?.contains(e.target) && !navLinks.contains(e.target)) {
+                    this.toggleMobileMenu();
                 }
             }
 
