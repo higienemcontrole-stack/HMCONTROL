@@ -37,7 +37,11 @@
             <div class="nav-dropdown">
                 <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
                 <div class="nav-dropdown-content">
-                    <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sincronizar Base</a>
+                    <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gest�o de Contas</a>
+                    <a href="javascript:HM.backupSnapshots()"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                    <a href="javascript:HM.setGoals()"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                    <a href="javascript:HM.viewAuditLogs()"><i class="fas fa-history"></i> Logs de Auditoria</a>
                     <a href="javascript:HM.clearCache()"><i class="fas fa-eraser"></i> Limpar Cache</a>
                 </div>
             </div>
@@ -176,7 +180,8 @@
         }
     });
 </script>
-<script src="/src/js/services/apiService.js?v=4.0.0"></script>
-<script src="/src/js/core.js?v=4.0.0"></script>
+<script src="/src/js/services/apiService.js?v=4.1.0"></script>
+<script src="/src/js/core.js?v=4.1.0"></script>
 </body>
 </html>
+
