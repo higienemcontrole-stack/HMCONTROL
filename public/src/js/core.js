@@ -119,6 +119,8 @@ class Core {
             navDropdowns.forEach(nd => {
                 if (nd.classList.contains('active') && !nd.contains(e.target)) {
                     nd.classList.remove('active');
+                    const content = nd.querySelector('.nav-dropdown-content');
+                    if (content) content.style.display = 'none';
                 }
             });
 
@@ -136,7 +138,18 @@ class Core {
             if (settingsToggle && window.innerWidth <= 1024) {
                 e.preventDefault();
                 e.stopPropagation();
-                settingsToggle.parentElement.classList.toggle('active');
+                const parent = settingsToggle.parentElement;
+                const content = parent.querySelector('.nav-dropdown-content');
+                const rect = settingsToggle.getBoundingClientRect();
+                
+                const isActive = parent.classList.toggle('active');
+                if (isActive && content) {
+                    content.style.display = 'flex';
+                    content.style.top = rect.top + 'px';
+                    content.style.left = '280px';
+                } else if (content) {
+                    content.style.display = 'none';
+                }
             }
         });
     }

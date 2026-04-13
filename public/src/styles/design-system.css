@@ -326,16 +326,16 @@ body {
     }
 
     .nav-dropdown-content {
-        position: absolute !important;
-        left: 280px !important; /* Abre exatamente após a sidebar */
-        top: 0 !important;
+        position: fixed !important;
+        left: -9999px; /* Fora da tela por padrão até o JS posicionar */
+        top: 0;
         width: 240px !important;
         background: white !important;
         box-shadow: 10px 10px 40px rgba(0,0,0,0.3) !important;
         border: 1px solid var(--border) !important;
         border-radius: 0 12px 12px 0 !important;
         padding: 5px 0 !important;
-        z-index: 6000 !important;
+        z-index: 99999 !important; /* Acima de TUDO */
         display: none;
         flex-direction: column;
         animation: fadeInRight 0.2s ease-out;
