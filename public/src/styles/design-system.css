@@ -327,18 +327,20 @@ body {
 
     .nav-dropdown-content {
         position: fixed !important;
-        left: -9999px; /* Fora da tela por padrão até o JS posicionar */
+        left: -9999px; 
         top: 0;
         width: 240px !important;
         background: white !important;
-        box-shadow: 10px 10px 40px rgba(0,0,0,0.3) !important;
-        border: 1px solid var(--border) !important;
+        box-shadow: 10px 10px 40px rgba(0,0,0,0.5) !important;
+        border: 3px solid var(--primary) !important; /* Borda grossa para diagnóstico */
         border-radius: 0 12px 12px 0 !important;
         padding: 5px 0 !important;
-        z-index: 99999 !important; /* Acima de TUDO */
+        z-index: 100000 !important; 
         display: none;
         flex-direction: column;
-        animation: fadeInRight 0.2s ease-out;
+        opacity: 1 !important;
+        visibility: visible !important;
+        animation: none !important; /* Remover animação para teste */
     }
 
     .nav-dropdown:hover .nav-dropdown-content,
