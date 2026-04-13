@@ -1,4 +1,4 @@
-/* HM CONTROL - Core Orchestrator (v3.23.5 - Interaction Stabilized) */
+/* HM CONTROL - Core Orchestrator (v3.23.6 - Total Stability) */
 
 const CORE_CONFIG = {
     API_BASE: window.location.origin
@@ -10,7 +10,7 @@ class Core {
         this.token = localStorage.getItem('hm_token') || null;
         this.elements = {}; 
         
-        console.log('[Core] Sistema v3.23.5 Iniciado.');
+        console.log('[Core] Sistema v3.23.6 Iniciado.');
         this.observeDOM();
         
         if (document.readyState !== 'loading') {
@@ -129,13 +129,19 @@ class Core {
                 }
             });
 
-            // Menu Mobile (Responsivo) - Lógica v3.23.5
+            // Menu Mobile (Responsivo) - Lógica v3.23.6
             const navLinks = document.querySelector('.nav-links');
             const mobileTrigger = document.getElementById('mobile-menu-btn');
             
+            // GATILHO DE ABERTURA/FECHAMENTO (Botão Hambúrguer)
+            if (e.target.closest('#mobile-menu-btn')) {
+                this.toggleMobileMenu();
+                return;
+            }
+
             if (navLinks && navLinks.classList.contains('active')) {
-                // SÓ FECHA se clicar FORA da sidebar E fora do botão de gatilho
-                if (!mobileTrigger?.contains(e.target) && !navLinks.contains(e.target)) {
+                // FECHAMENTO AO CLICAR FORA (Overlay)
+                if (!navLinks.contains(e.target)) {
                     this.toggleMobileMenu();
                 }
             }
