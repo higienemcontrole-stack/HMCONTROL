@@ -1,4 +1,4 @@
-/* HM CONTROL - Core Orchestrator (v3.23.6 - Total Stability) */
+/* HM CONTROL - Core Orchestrator (v3.23.7 - Sync & Stability) */
 
 const CORE_CONFIG = {
     API_BASE: window.location.origin
@@ -10,7 +10,7 @@ class Core {
         this.token = localStorage.getItem('hm_token') || null;
         this.elements = {}; 
         
-        console.log('[Core] Sistema v3.23.6 Iniciado.');
+        console.log('[Core] Sistema v3.23.7 Iniciado.');
         this.observeDOM();
         
         if (document.readyState !== 'loading') {
@@ -129,20 +129,26 @@ class Core {
                 }
             });
 
-            // Menu Mobile (Responsivo) - Lógica v3.23.6
+            // Menu Mobile (Responsivo) - Lógica de Sincronia v3.23.7
             const navLinks = document.querySelector('.nav-links');
-            const mobileTrigger = document.getElementById('mobile-menu-btn');
+            const mobileTrigger = document.getElementById('mobile-menu-toggle');
             
-            // GATILHO DE ABERTURA/FECHAMENTO (Botão Hambúrguer)
-            if (e.target.closest('#mobile-menu-btn')) {
+            // GATILHO DE ABERTURA/FECHAMENTO (Usa o ID correto do HTML)
+            if (e.target.closest('#mobile-menu-toggle')) {
+                e.preventDefault();
+                e.stopPropagation();
                 this.toggleMobileMenu();
                 return;
             }
 
             if (navLinks && navLinks.classList.contains('active')) {
-                // FECHAMENTO AO CLICAR FORA (Overlay)
+                // FECHAMENTO AO CLICAR FORA (Na overlay ou fora da sidebar)
+                // Se clicar em um link real (não dropdown), deixa fechar e navegar
                 if (!navLinks.contains(e.target)) {
                     this.toggleMobileMenu();
+                } else if (!e.target.closest('.nav-dropdown')) {
+                    // Clicou num link normal dentro do menu? Navega e fecha.
+                    setTimeout(() => this.toggleMobileMenu(), 100);
                 }
             }
 
