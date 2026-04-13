@@ -191,7 +191,7 @@ class Core {
 
     // --- MÉTODOS PÚBLICOS ---
 
-    // --- FUNÇÕES DE CONFIGURAÇÃO (v11.0.0) ---
+    // --- FUNÇÕES DE CONFIGURAÇÃO (v11.0.1) ---
 
     async syncDatabase() {
         try {
@@ -286,7 +286,7 @@ class Core {
             title: 'Logs de Auditoria',
             html: `
                 <div style="text-align: left; font-family: monospace; font-size: 11px; max-height: 300px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px;">
-                    [${new Date().toLocaleTimeString()}] Sistema v11.0.0 verificado<br>
+                    [${new Date().toLocaleTimeString()}] Sistema v11.0.1 verificado<br>
                     [${new Date().toLocaleTimeString()}] Cache de dados: 1240 registros<br>
                     [${new Date().toLocaleTimeString()}] Sincronização: OK<br>
                     [${new Date().toLocaleTimeString()}] Z-Index Hardening aplicado<br>
@@ -485,12 +485,12 @@ class Core {
             navDropdown.style.opacity = '1';
             
             navDropdown.innerHTML = `
-                <a href="javascript:HM.syncDatabase()" style="color: #ffffff !important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
-                <a href="javascript:HM.openUserManagementModal()" style="color: #ffffff !important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
-                <a href="javascript:HM.exportSnapshot()" style="color: #ffffff !important;"><i class="fas fa-file-excel"></i> Snapshots (Backup)</a>
-                <a href="javascript:HM.openMetas()" style="color: #ffffff !important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
-                <a href="javascript:HM.openAuditLogs()" style="color: #ffffff !important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
-                <a href="javascript:HM.clearCache()" style="color: #ff6b6b !important;"><i class="fas fa-eraser"></i> Limpar Cache</a>
+                <a href="sistema.html" style="color: #ffffff !important;"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
+                <a href="gestao-contas.html" style="color: #ffffff !important;"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
+                <a href="snapshots.html" style="color: #ffffff !important;"><i class="fas fa-database"></i> Snapshots (Backup)</a>
+                <a href="metas.html" style="color: #ffffff !important;"><i class="fas fa-bullseye"></i> Configurar Metas</a>
+                <a href="logs.html" style="color: #ffffff !important;"><i class="fas fa-history"></i> Logs de Auditoria</a>
+                <a href="manutencao.html" style="color: #ff6b6b !important;"><i class="fas fa-tools"></i> Manutenção</a>
             `;
         } else {
             console.warn('[Core] .nav-dropdown-content não encontrado para injeção.');
