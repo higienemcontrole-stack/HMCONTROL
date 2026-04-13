@@ -289,15 +289,15 @@
         document.getElementById('users-tbody').innerHTML =
             `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Carregando...</div></td></tr>`;
         try {
-            const res = await fetch(`${SUPA_URL}/rest/v1/profiles?select=id,full_name,email,role,acessos,ativo,created_at&order=created_at.desc`, {
+            const res = await fetch(`${SUPA_URL}/rest/v1/perfis?select=id,nome_completo,email,cargo,acessos,ativo,updated_at&order=updated_at.desc`, {
                 headers: supaHeaders()
             });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status} - ${await res.text()}`);
             allUsers = await res.json();
             renderUsersTable(allUsers);
         } catch (e) {
             document.getElementById('users-tbody').innerHTML =
-                `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>Erro ao carregar usuários do Supabase.<br><small style="color:#94a3b8">${e.message}</small></div></td></tr>`;
+                `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>Erro ao carregar usuários.<br><small style="color:#94a3b8">${e.message}</small></div></td></tr>`;
         }
     }
 
@@ -310,12 +310,12 @@
             return;
         }
         tbody.innerHTML = users.map((u, i) => {
-            const name     = u.full_name || u.email || '—';
+            const name     = u.nome_completo || u.email || '—';
             const initials = name.substring(0, 2).toUpperCase();
             const color    = AVATAR_COLORS[i % AVATAR_COLORS.length];
-            const isAdmin  = u.role === 'admin';
+            const isAdmin  = u.cargo === 'admin';
             const isActive = u.ativo !== false;
-            const created  = u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—';
+            const created  = u.updated_at ? new Date(u.updated_at).toLocaleDateString('pt-BR') : '—';
             const acessos  = u.acessos || [];
 
             const roleBadge = isAdmin
@@ -367,8 +367,8 @@
         const role   = document.getElementById('filter-cargo').value;
         const status = document.getElementById('filter-status').value;
         const filtered = allUsers.filter(u => {
-            const matchQ = !q || (u.full_name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
-            const matchC = !role || u.role === role;
+            const matchQ = !q || (u.nome_completo || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q);
+            const matchC = !role || u.cargo === role;
             const matchS = !status || (status === 'active' ? u.ativo !== false : u.ativo === false);
             return matchQ && matchC && matchS;
         });
@@ -406,9 +406,9 @@
         if (isEdit) {
             const u = allUsers.find(x => x.id === uid);
             if (u) {
-                document.getElementById('f-nome').value  = u.full_name || '';
+                document.getElementById('f-nome').value  = u.nome_completo || '';
                 document.getElementById('f-email').value = u.email || '';
-                document.getElementById('f-cargo').value = u.role || 'user';
+                document.getElementById('f-cargo').value = u.cargo || 'user';
                 const acessos = u.acessos || [];
                 document.querySelectorAll('#perm-grid input[type=checkbox]').forEach(c => {
                     if (acessos.includes(c.value)) { c.checked = true; c.closest('label').classList.add('checked'); }
@@ -440,12 +440,12 @@
         if (!editingId && !senha) return showToast('Informe a senha para o novo usuário.', 'error');
         if (!editingId && senha.length < 6) return showToast('Senha deve ter no mínimo 6 caracteres.', 'error');
 
-        const profilePayload = { full_name: nome, email, role: cargo, acessos };
+        const profilePayload = { nome_completo: nome, email, cargo, acessos };
 
         try {
             if (editingId) {
-                // UPDATE: atualizar profile
-                const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${editingId}`, {
+                // UPDATE: atualizar perfil na tabela perfis
+                const res = await fetch(`${SUPA_URL}/rest/v1/perfis?id=eq.${editingId}`, {
                     method: 'PATCH',
                     headers: supaHeaders(),
                     body: JSON.stringify(profilePayload)
@@ -469,7 +469,7 @@
                 });
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({ message: 'Erro ao criar usuário' }));
-                    // Fallback: tentar criar direto no Supabase Auth signup
+                    // Fallback: criar via Supabase Auth signup + inserir em perfis
                     const signRes = await fetch(`${SUPA_URL}/auth/v1/signup`, {
                         method: 'POST',
                         headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
@@ -479,8 +479,8 @@
                     const newAuth = await signRes.json();
                     const newId = newAuth.user?.id || newAuth.id;
                     if (!newId) throw new Error('Não foi possível obter o ID do novo usuário');
-                    // Inserir profile
-                    await fetch(`${SUPA_URL}/rest/v1/profiles`, {
+                    // Inserir em perfis
+                    await fetch(`${SUPA_URL}/rest/v1/perfis`, {
                         method: 'POST',
                         headers: supaHeaders(),
                         body: JSON.stringify({ id: newId, ...profilePayload })
@@ -500,7 +500,7 @@
         const action = isActive ? 'Desativar' : 'Ativar';
         if (!confirm(`${action} este usuário?`)) return;
         try {
-            const res = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${uid}`, {
+            const res = await fetch(`${SUPA_URL}/rest/v1/perfis?id=eq.${uid}`, {
                 method: 'PATCH',
                 headers: supaHeaders(),
                 body: JSON.stringify({ ativo: !isActive })
@@ -528,12 +528,12 @@
         if (!deleteTarget) return;
         document.getElementById('confirm-ok-btn').innerHTML = '<i class="fas fa-spinner spinner"></i> Excluindo...';
         try {
-            // 1. Remover profile da tabela
-            const r1 = await fetch(`${SUPA_URL}/rest/v1/profiles?id=eq.${deleteTarget}`, {
+            // 1. Remover da tabela perfis
+            const r1 = await fetch(`${SUPA_URL}/rest/v1/perfis?id=eq.${deleteTarget}`, {
                 method: 'DELETE',
                 headers: supaHeaders()
             });
-            if (!r1.ok) throw new Error('Falha ao remover profile');
+            if (!r1.ok) throw new Error('Falha ao remover perfil');
 
             // 2. Tentar remover do Auth via API server-side
             await fetch(`/api/users/${deleteTarget}`, {

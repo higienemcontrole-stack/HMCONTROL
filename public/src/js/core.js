@@ -119,7 +119,7 @@ class Core {
             const SUPA_URL = 'https://hmcontrol-prod.supabase.co';
             const SUPA_KEY = '[PURGED_SERVICE_KEY]';
             const r = await fetch(
-                `${SUPA_URL}/rest/v1/profiles?id=eq.${this.user.id}&select=full_name,email,role,acessos,ativo`,
+                `${SUPA_URL}/rest/v1/perfis?id=eq.${this.user.id}&select=nome_completo,email,cargo,acessos,ativo`,
                 { headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${this.token}` } }
             );
             if (r.ok) {
