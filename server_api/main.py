@@ -140,6 +140,84 @@ async def bootstrap_admin(token: str):
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+# --- GESTÃO DE USUÁRIOS (ADMIN) ---
+
+@app.get("/api/users")
+async def list_users():
+    """Lista todos os perfis de usuários cadastrados"""
+    try:
+        # Busca perfis ordenados por nome
+        res = supabase.table("perfis").select("*").order("nome_completo").execute()
+        return res.data
+    except Exception as e:
+        logger.error(f"Erro ao listar usuários: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro ao buscar usuários no Banco de Dados.")
+
+@app.post("/api/users")
+async def create_user(user: AdminUserCreate):
+    """Cria um usuário no Auth e o respectivo perfil na tabela perfis"""
+    try:
+        # 1. Criar no Supabase Auth (Admin)
+        auth_res = auth_admin.create_user_admin(
+            email=user.email,
+            password=user.password,
+            metadata={"full_name": user.nome_completo}
+        )
+        
+        user_id = auth_res.user.id
+        
+        # 2. Criar perfil na tabela perfis
+        profile_data = {
+            "id": user_id,
+            "email": user.email,
+            "nome_completo": user.nome_completo,
+            "cargo": user.cargo,
+            "acessos": user.acessos,
+            "ativo": True
+        }
+        
+        supabase.table("perfis").insert(profile_data).execute()
+        
+        return {"status": "success", "user_id": user_id}
+    except Exception as e:
+        logger.error(f"Erro ao criar usuário admin: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.patch("/api/users/{user_id}")
+async def update_user(user_id: str, data: dict):
+    """Atualiza dados do perfil de um usuário"""
+    try:
+        # Permitir apenas campos específicos para evitar sobrescrita acidental do ID
+        safe_fields = ["nome_completo", "cargo", "acessos", "ativo"]
+        payload = {k: v for k, v in data.items() if k in safe_fields}
+        
+        if not payload:
+            return {"status": "ignored", "message": "Nenhum campo válido para atualização."}
+            
+        res = supabase.table("perfis").update(payload).eq("id", user_id).execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        logger.error(f"Erro ao atualizar usuário: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/users/{user_id}")
+async def delete_user(user_id: str):
+    """Remove o usuário da tabela perfis e do Supabase Auth"""
+    try:
+        # 1. Remover da tabela perfis
+        supabase.table("perfis").delete().eq("id", user_id).execute()
+        
+        # 2. Remover do Supabase Auth (Admin)
+        try:
+            auth_admin.delete_user_admin(user_id)
+        except Exception as auth_err:
+            logger.warning(f"Usuário removido da tabela, mas erro ao apagar do Auth: {str(auth_err)}")
+        
+        return {"status": "success", "message": "Usuário excluído com sucesso."}
+    except Exception as e:
+        logger.error(f"Erro ao deletar usuário: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/")
 async def root():
     """Redireciona o acesso da raiz para a pagina inicial do frontend"""

@@ -265,9 +265,6 @@
 <script src="src/js/core.js?v=11.0.6"></script>
 <script>
     // ─── Config ──────────────────────────────────────────────────────────────
-    const SUPA_URL  = 'https://hmcontrol-prod.supabase.co';
-    const SUPA_KEY  = '[PURGED_SERVICE_KEY]';
-
     const SCREENS = ['dashboard','registro','tabulacao','dinamica','validacoes','configuracoes'];
     const SCREEN_LABELS = { dashboard:'Dashboard', registro:'Registro', tabulacao:'Tabulação', dinamica:'Dinâmica', validacoes:'Validações', configuracoes:'Configurações' };
     const AVATAR_COLORS = ['#2563eb','#16a34a','#7c3aed','#dc2626','#d97706','#0369a1','#059669','#9333ea'];
@@ -276,28 +273,24 @@
     let deleteTarget = null;
     let editingId  = null;
 
-    // ─── Headers Supabase ─────────────────────────────────────────────────────
-    function supaHeaders(withService = false) {
+    function apiHeaders() {
         const token = localStorage.getItem('hm_token');
-        const h = { 'apikey': SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
-        if (token) h['Authorization'] = `Bearer ${token}`;
-        return h;
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
     }
 
-    // ─── Carregar usuários do Supabase (tabela perfis) ───────────────────────
     async function loadUsers() {
-        document.getElementById('users-tbody').innerHTML =
-            `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Carregando...</div></td></tr>`;
+        const tbody = document.getElementById('users-tbody');
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Sincronizando com Supabase...</div></td></tr>`;
         try {
-            const res = await fetch(`${SUPA_URL}/rest/v1/perfis?select=id,nome_completo,email,cargo,acessos,ativo,updated_at&order=updated_at.desc`, {
-                headers: supaHeaders()
-            });
-            if (!res.ok) throw new Error(`HTTP ${res.status} - ${await res.text()}`);
+            const res = await fetch(`/api/users`, { headers: apiHeaders() });
+            if (!res.ok) throw new Error(`Status ${res.status}`);
             allUsers = await res.json();
             renderUsersTable(allUsers);
         } catch (e) {
-            document.getElementById('users-tbody').innerHTML =
-                `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>Erro ao carregar usuários.<br><small style="color:#94a3b8">${e.message}</small></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:#dc2626"></i>Erro de conexão com a API.<br><small>${e.message}</small></div></td></tr>`;
         }
     }
 
@@ -438,56 +431,26 @@
         if (!nome) return showToast('Informe o nome completo.', 'error');
         if (!email) return showToast('Informe o e-mail.', 'error');
         if (!editingId && !senha) return showToast('Informe a senha para o novo usuário.', 'error');
-        if (!editingId && senha.length < 6) return showToast('Senha deve ter no mínimo 6 caracteres.', 'error');
 
-        const profilePayload = { nome_completo: nome, email, cargo, acessos };
+        const payload = { nome_completo: nome, email, cargo, acessos };
+        if (senha) payload.password = senha;
 
         try {
-            if (editingId) {
-                // UPDATE: atualizar perfil na tabela perfis
-                const res = await fetch(`${SUPA_URL}/rest/v1/perfis?id=eq.${editingId}`, {
-                    method: 'PATCH',
-                    headers: supaHeaders(),
-                    body: JSON.stringify(profilePayload)
-                });
-                if (!res.ok) throw new Error(await res.text());
-                if (senha) {
-                    // Atualizar senha via API server-side /api/users/:id
-                    await fetch(`/api/users/${editingId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('hm_token')}` },
-                        body: JSON.stringify({ senha })
-                    });
-                }
-                showToast('Usuário atualizado com sucesso!', 'success');
-            } else {
-                // CREATE: criar usuário na API Supabase Auth (via API route que usa service_role)
-                const res = await fetch(`/api/users`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('hm_token')}` },
-                    body: JSON.stringify({ email, senha, nome_completo: nome, cargo, acessos })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({ message: 'Erro ao criar usuário' }));
-                    // Fallback: criar via Supabase Auth signup + inserir em perfis
-                    const signRes = await fetch(`${SUPA_URL}/auth/v1/signup`, {
-                        method: 'POST',
-                        headers: { 'apikey': SUPA_KEY, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password: senha })
-                    });
-                    if (!signRes.ok) throw new Error(err.message || 'Falha ao criar conta no Auth');
-                    const newAuth = await signRes.json();
-                    const newId = newAuth.user?.id || newAuth.id;
-                    if (!newId) throw new Error('Não foi possível obter o ID do novo usuário');
-                    // Inserir em perfis
-                    await fetch(`${SUPA_URL}/rest/v1/perfis`, {
-                        method: 'POST',
-                        headers: supaHeaders(),
-                        body: JSON.stringify({ id: newId, ...profilePayload })
-                    });
-                }
-                showToast('Usuário criado com sucesso!', 'success');
+            const url = editingId ? `/api/users/${editingId}` : `/api/users`;
+            const method = editingId ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method: method,
+                headers: apiHeaders(),
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: 'Falha na sincronização' }));
+                throw new Error(err.detail || 'Erro ao processar usuário');
             }
+
+            showToast(`Usuário ${editingId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
             closeModal();
             await loadUsers();
         } catch (e) {
@@ -500,12 +463,12 @@
         const action = isActive ? 'Desativar' : 'Ativar';
         if (!confirm(`${action} este usuário?`)) return;
         try {
-            const res = await fetch(`${SUPA_URL}/rest/v1/perfis?id=eq.${uid}`, {
+            const res = await fetch(`/api/users/${uid}`, {
                 method: 'PATCH',
-                headers: supaHeaders(),
+                headers: apiHeaders(),
                 body: JSON.stringify({ ativo: !isActive })
             });
-            if (!res.ok) throw new Error(await res.text());
+            if (!res.ok) throw new Error('Falha ao atualizar status');
             showToast(`Usuário ${isActive ? 'desativado' : 'ativado'} com sucesso.`, 'success');
             await loadUsers();
         } catch (e) { showToast('Erro: ' + e.message, 'error'); }
@@ -526,27 +489,29 @@
 
     async function confirmDelete() {
         if (!deleteTarget) return;
-        document.getElementById('confirm-ok-btn').innerHTML = '<i class="fas fa-spinner spinner"></i> Excluindo...';
+        const btn = document.getElementById('confirm-ok-btn');
+        btn.innerHTML = '<i class="fas fa-spinner spinner"></i> Excluindo...';
+        btn.disabled = true;
+
         try {
-            // 1. Remover da tabela perfis
-            const r1 = await fetch(`${SUPA_URL}/rest/v1/perfis?id=eq.${deleteTarget}`, {
+            const res = await fetch(`/api/users/${deleteTarget}`, {
                 method: 'DELETE',
-                headers: supaHeaders()
+                headers: apiHeaders()
             });
-            if (!r1.ok) throw new Error('Falha ao remover perfil');
 
-            // 2. Tentar remover do Auth via API server-side
-            await fetch(`/api/users/${deleteTarget}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('hm_token')}` }
-            }).catch(() => {}); // Não falhar se a route não existir
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ detail: 'Falha na exclusão' }));
+                throw new Error(err.detail);
+            }
 
-            showToast('Usuário excluído com sucesso.', 'success');
+            showToast('Usuário excluído de todas as bases com sucesso.', 'success');
             closeConfirm();
             await loadUsers();
         } catch (e) {
             showToast('Erro ao excluir: ' + e.message, 'error');
-            document.getElementById('confirm-ok-btn').innerHTML = '<i class="fas fa-trash"></i> Sim, Excluir';
+        } finally {
+            btn.innerHTML = '<i class="fas fa-trash"></i> Sim, Excluir';
+            btn.disabled = false;
         }
     }
 
