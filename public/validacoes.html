@@ -28,7 +28,7 @@
                 <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
                 <div class="nav-dropdown-content">
                     <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
-                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gest�o de Contas</a>
+                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gest�o de Contas</a>
                     <a href="javascript:HM.backupSnapshots()"><i class="fas fa-database"></i> Snapshots (Backup)</a>
                     <a href="javascript:HM.setGoals()"><i class="fas fa-bullseye"></i> Configurar Metas</a>
                     <a href="javascript:HM.viewAuditLogs()"><i class="fas fa-history"></i> Logs de Auditoria</a>
@@ -153,8 +153,8 @@
     </main>
 </div>
 
-<script src="/src/js/services/apiService.js?v=11.0.1"></script>
-<script src="/src/js/core.js?v=11.0.6"></script>
+<script src="/src/js/services/apiService.js"></script>
+<script src="/src/js/core.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         try {
@@ -184,7 +184,7 @@
 
             renderBadges('list-unidades', data.unidades);
             renderBadges('list-momentos', data.momentos);
-            renderBadges('list-produtos', data.insumos);
+            renderBadges('list-produtos', data.produtos);
 
         } catch (err) {
             console.error('Erro ao carregar validações:', err);
