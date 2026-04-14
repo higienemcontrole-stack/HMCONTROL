@@ -5,15 +5,16 @@ server_api/temp_token.txt
 server_api/debug_auth.py
 server_api/update_users.py
 server_api/test_rls*.py
-documentação/
+# Scripts e utilitários
 scripts/
 
-# Segurança e Segredos (Ambiente)
+# Segurança e Segredos (Ambiente e Documentos)
 .env
 .env.local
 .env.*.local
 config/.env
 server_api/config/.env
+documentação/
 .vercel
 .wrangler
 .turbo
