@@ -61,6 +61,50 @@ class Core {
         }
     }
 
+    async handleLogin(e) {
+        e.preventDefault();
+
+        const email    = document.getElementById('email')?.value?.trim();
+        const password = document.getElementById('password')?.value;
+        const btnText  = document.getElementById('btn-text');
+        const errMsg   = document.getElementById('error-message');
+
+        if (!email || !password) return;
+
+        if (btnText) btnText.textContent = 'Autenticando...';
+        if (errMsg) errMsg.style.display = 'none';
+
+        try {
+            const response = await fetch(`/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || 'Credenciais inválidas.');
+            }
+
+            // Salvar sessão (backend retorna { session, user, profile })
+            const token = data.session?.access_token || data.access_token || data.token;
+            localStorage.setItem('hm_token', token);
+            localStorage.setItem('hm_user',  JSON.stringify(data.user || { email }));
+
+            // Redirecionar para o portal
+            window.location.href = 'index.html';
+
+        } catch (err) {
+            console.error('[Core] Falha no login:', err);
+            if (btnText) btnText.textContent = 'Entrar no Sistema';
+            if (errMsg) {
+                errMsg.textContent = err.message || 'Credenciais inválidas. Tente novamente.';
+                errMsg.style.display = 'block';
+            }
+        }
+    }
+
     refreshUI() {
         if (!this.user) return;
 
