@@ -542,19 +542,7 @@ class Core {
             console.warn('[Core] .nav-dropdown-content não encontrado para injeção.');
         }
 
-        // 2. Injetar Botão de Atalho no Dropdown de Usuário (Versão Curta)
-        const userDropdown = document.getElementById('user-dropdown');
-        if (userDropdown && !document.getElementById('btn-admin-shortcut')) {
-            const btn = document.createElement('button');
-            btn.id = 'btn-admin-shortcut';
-            btn.className = 'dropdown-item';
-            btn.style.color = 'var(--primary)';
-            btn.innerHTML = '<i class="fas fa-shield-alt"></i> Painel de Gestão';
-            btn.onclick = () => this.openUserManagementModal();
-            userDropdown.prepend(btn);
-        }
-
-        // 3. Injetar Modal de Gestão de Contas (Unificado)
+        // 2. Injetar Modal de Gestão de Contas (Unificado)
         if (!document.getElementById('admin-user-modal')) {
             const modalHtml = `
                 <div class="modal-overlay" id="admin-user-modal">
