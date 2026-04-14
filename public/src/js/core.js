@@ -421,30 +421,49 @@ class Core {
             const targetId = externalUser ? externalUser.id : this.user.id;
             this.editingUserId = targetId;
             
-            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${targetId}`, {
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            });
+            console.log('[Core] Carregando perfil para:', targetId, 'token:', this.token ? 'presente' : 'ausente');
             
-            // Perfil pode vir vazio se for um usuário pendente
-            const profile = res.ok ? await res.json() : (externalUser || {});
-
+            let profile = externalUser || {};
+            
+            // Tentar buscar do servidor se temos token
+            if (this.token) {
+                try {
+                    const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${targetId}`, {
+                        headers: { 'Authorization': `Bearer ${this.token}` }
+                    });
+                    if (res.ok) {
+                        const serverProfile = await res.json();
+                        if (serverProfile) {
+                            profile = { ...profile, ...serverProfile };
+                        }
+                    }
+                } catch (fetchErr) {
+                    console.warn('[Core] Erro ao buscar perfil do servidor:', fetchErr);
+                }
+            }
+            
+            // Se ainda não tem dados, usar dados do localStorage
+            if (!profile.nome_completo && this.user) {
+                profile = { ...this.user, ...profile };
+            }
+            
             // População do Modal
-            document.getElementById('profile-name').value = profile.nome_completo || externalUser?.nome_completo || '';
-            document.getElementById('profile-email').value = profile.email || externalUser?.email || '';
+            document.getElementById('profile-name').value = profile.nome_completo || profile.full_name || '';
+            document.getElementById('profile-email').value = profile.email || ''; 
             document.getElementById('profile-password').value = ''; 
             
             const roleEl = document.getElementById('profile-role');
-            const isAdmin = this.user.cargo === 'admin';
+            const isAdmin = this.user && (this.user.cargo === 'admin' || this.user.role === 'admin');
             
             if (roleEl) {
-                roleEl.value = profile.cargo || 'user';
-                roleEl.disabled = !isAdmin; // Só Admin muda cargo de terceiros ou o próprio
+                roleEl.value = profile.cargo || profile.role || 'user';
+                roleEl.disabled = !isAdmin;
             }
             
             const screenList = document.getElementById('profile-screens');
             if (screenList) {
                 const checks = screenList.querySelectorAll('input[type="checkbox"]');
-                const userScreens = profile.acessos || ['dashboard'];
+                const userScreens = profile.acessos || this.user?.acessos || ['dashboard'];
 
                 checks.forEach(check => {
                     if (check.value !== 'dashboard') {
@@ -454,6 +473,7 @@ class Core {
                 });
             }
 
+            console.log('[Core] Perfil carregado:', profile);
             modal.classList.add('active');
         } catch (err) { 
             console.error('[Core] Modal Open Error:', err);
