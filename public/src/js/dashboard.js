@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initDashboard(unit = 'TODAS', month = 'TODOS', year = 'TODOS') {
     try {
-        const url = `/api/data/dashboard?unit=${unit}&month=${month}&year=${year}`;
+        const url = `/api/Dados/dashboard?unit=${unit}&month=${month}&year=${year}`;
         const res = await fetch(url);
         const data = await res.json();
 

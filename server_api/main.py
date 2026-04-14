@@ -24,12 +24,20 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Prioriza variáveis do sistema (Dashboard Vercel) over arquivos locais
 DB_URL = os.environ.get("DB_URL")
-DB_KEY = os.environ.get("DB_SERVICE_KEY") or os.environ.get("DB_PUBLIC_KEY")
+SERVICE_KEY = os.environ.get("DB_SERVICE_KEY")
+PUBLIC_KEY = os.environ.get("DB_PUBLIC_KEY")
+
+# Fallback para compatibilidade se apenas uma chave for fornecida
+DB_KEY = SERVICE_KEY or PUBLIC_KEY
 
 if not DB_URL or not DB_KEY:
-    logger.error(f"ERRO CRÍTICO: Variáveis de infraestrutura ausentes.")
+    logger.error(f"ERRO CRÍTICO: Variáveis de infraestrutura ausentes (URL: {bool(DB_URL)}, KEY: {bool(DB_KEY)})")
 
-# --- INICIALIZAÇÃO ÚNICA DO APP ---
+# Inicializar Componentes com chaves específicas
+db = create_client(DB_URL, PUBLIC_KEY or SERVICE_KEY)
+auth_admin = AuthManager(DB_URL, SERVICE_KEY or PUBLIC_KEY)
+
+# --- INICIALIZAÇÃO DO APP ---
 app = FastAPI(title="HM CONTROL API")
 
 app.add_middleware(
@@ -39,10 +47,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Inicializar Componentes
-db = create_client(DB_URL, DB_KEY)
-auth_admin = AuthManager(DB_URL, DB_KEY)
 
 # --- CACHE DE DADOS db ---
 GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
@@ -296,7 +300,7 @@ async def root():
 
 import traceback
 
-@app.get("/api/data/dashboard")
+@app.get("/api/Dados/dashboard")
 async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
     try:
         data = await fetch_all_registros_from_db()
@@ -306,7 +310,7 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
                 "moments": [], 
                 "categories": [], 
                 "timeline": [], 
-                "units": []  # Corrigido de units_data para units para sincronia com o frontend
+                "units": []
             }
             
         df = pd.DataFrame(data)
@@ -344,7 +348,7 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         logger.error(f"Erro no dashboard purificado: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao processar dados vivos do db.")
 
-@app.get("/api/data/tabulation")
+@app.get("/api/Dados/tabulation")
 async def get_tabulation():
     try:
         data = await fetch_all_registros_from_db(force_refresh=True)
@@ -353,7 +357,7 @@ async def get_tabulation():
         logger.error(f"Erro na tabulação: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
-@app.get("/api/data/validations")
+@app.get("/api/Dados/validations")
 async def get_validations():
     """Retorna as listas oficiais diretamente do db (Sync Realtime)"""
     try:
@@ -392,7 +396,7 @@ async def sync_database():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/data/pivot")
+@app.get("/api/Dados/pivot")
 async def get_pivot():
     try:
         data = await fetch_all_registros_from_db()
@@ -446,8 +450,19 @@ async def list_users():
             
         return sorted(final_list, key=lambda x: x["nome_completo"])
     except Exception as e:
-        logger.error(f"Erro ao listar usuários sincronizados: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Erro ao listar usuários sincronizados: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Erro de Identidade: {str(e)}")
+
+# --- LISTAR REGISTROS (GET /api/registros) ---
+@app.get("/api/registros")
+async def list_registros():
+    """Retorna todos os registros em formato bruto para a tabulação"""
+    try:
+        data = await fetch_all_registros_from_db()
+        return data
+    except Exception as e:
+        logger.error(f"Erro ao listar registros: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro ao buscar dados do banco.")
 
 @app.post("/api/admin/users")
 async def create_user(user: AdminUserCreate):
