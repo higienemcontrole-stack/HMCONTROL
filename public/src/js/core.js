@@ -276,6 +276,14 @@ class Core {
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
+
+            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/admin/sync`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${this.token}` }
+            });
+
+            if (res.ok) {
+                Swal.fire('Concluído', 'Sincronização realizada com sucesso.', 'success');
                 if (window.location.pathname.includes('dashboard') || window.location.pathname.includes('tabulacao')) {
                     setTimeout(() => window.location.reload(), 1500);
                 }
@@ -508,35 +516,6 @@ class Core {
         }
     }
 
-    async handleLogin(e) {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const btn = document.getElementById('login-btn');
-        const errorEl = document.getElementById('error-message');
-
-        try {
-            btn.disabled = true;
-            const response = await fetch(`${CORE_CONFIG.API_BASE}/api/auth/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem('hm_user', JSON.stringify(data.user));
-                localStorage.setItem('hm_token', data.session.access_token);
-                window.location.href = 'index.html';
-            } else { throw new Error(data.detail || 'Falha no login'); }
-        } catch (err) {
-            if (errorEl) {
-                errorEl.textContent = err.message;
-                errorEl.style.display = 'block';
-            }
-        } finally { btn.disabled = false; }
-    }
-
     // --- ADMIN MANAGEMENT (v3.8) ---
     
     injectAdminFeatures() {
@@ -721,24 +700,6 @@ class Core {
         } catch (e) {
             alert('Erro ao carregar detalhes do usuário.');
         }
-    }
-
-    async syncDatabase() {
-        if (!confirm('Deseja forçar a sincronização total com o banco de dados?')) return;
-        try {
-            await apiService.syncDatabase();
-            alert('Sincronização concluída com sucesso!');
-            window.location.reload();
-        } catch (err) { alert('Falha na sincronização.'); }
-    }
-
-    async clearCache() {
-        if (!confirm('Deseja limpar o cache global de registros?')) return;
-        try {
-            await apiService.clearCache();
-            alert('Cache limpo com sucesso!');
-            window.location.reload();
-        } catch (err) { alert('Falha ao limpar cache.'); }
     }
 
     logout() {
