@@ -144,14 +144,41 @@ async def bootstrap_admin(token: str):
 
 @app.get("/api/users")
 async def list_users():
-    """Lista todos os perfis de usuários cadastrados"""
+    """Lista unificada de usuários: Auth + Tabela de Perfis"""
     try:
-        # Busca perfis ordenados por nome
-        res = supabase.table("perfis").select("*").order("nome_completo").execute()
-        return res.data
+        # 1. Buscar todos os usuários do Supabase Auth (Admin)
+        auth_users = auth_admin.list_users_admin()
+        # Garante que temos uma lista de objetos do tipo User
+        users_list = auth_users if isinstance(auth_users, list) else (auth_users.users if hasattr(auth_users, 'users') else [])
+        
+        # 2. Buscar todos os registros da tabela perfis
+        profiles_res = supabase.table("perfis").select("*").execute()
+        profiles_map = {p['id']: p for p in profiles_res.data}
+        
+        # 3. Mesclar dados
+        unified = []
+        for u in users_list:
+            profile = profiles_map.get(u.id, {})
+            unified.append({
+                "id": u.id,
+                "email": u.email,
+                "nome_completo": profile.get("nome_completo") or u.user_metadata.get("full_name") or "",
+                "cargo": profile.get("cargo") or "user",
+                "acessos": profile.get("acessos") or [],
+                "ativo": profile.get("ativo", True),
+                "created_at": str(u.created_at) if hasattr(u, "created_at") else None,
+                "updated_at": profile.get("updated_at") or (str(u.updated_at) if hasattr(u, "updated_at") else None),
+                # Flag para indicar se o perfil ainda não foi configurado no banco
+                "no_profile": u.id not in profiles_map
+            })
+            
+        # Ordenar por nome (ou email se sem nome)
+        unified.sort(key=lambda x: (x["nome_completo"] or x["email"]).lower())
+        
+        return unified
     except Exception as e:
-        logger.error(f"Erro ao listar usuários: {str(e)}")
-        raise HTTPException(status_code=500, detail="Erro ao buscar usuários no Banco de Dados.")
+        logger.error(f"Erro ao unificar lista de usuários: {str(e)}")
+        raise HTTPException(status_code=500, detail="Erro ao sincronizar contas do Supabase.")
 
 @app.post("/api/users")
 async def create_user(user: AdminUserCreate):
@@ -185,19 +212,23 @@ async def create_user(user: AdminUserCreate):
 
 @app.patch("/api/users/{user_id}")
 async def update_user(user_id: str, data: dict):
-    """Atualiza dados do perfil de um usuário"""
+    """Atualiza ou cria (upsert) dados do perfil de um usuário"""
     try:
-        # Permitir apenas campos específicos para evitar sobrescrita acidental do ID
-        safe_fields = ["nome_completo", "cargo", "acessos", "ativo"]
+        # Permitir apenas campos específicos
+        safe_fields = ["nome_completo", "cargo", "acessos", "ativo", "email"]
         payload = {k: v for k, v in data.items() if k in safe_fields}
         
         if not payload:
-            return {"status": "ignored", "message": "Nenhum campo válido para atualização."}
+            return {"status": "ignored", "message": "Nenhum campo válido."}
+        
+        # Garante o ID no payload para o upsert funcionar como esperado
+        payload["id"] = user_id
+        payload["updated_at"] = datetime.now().isoformat()
             
-        res = supabase.table("perfis").update(payload).eq("id", user_id).execute()
+        res = supabase.table("perfis").upsert(payload).execute()
         return {"status": "success", "data": res.data}
     except Exception as e:
-        logger.error(f"Erro ao atualizar usuário: {str(e)}")
+        logger.error(f"Erro ao atualizar perfil (upsert): {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/api/users/{user_id}")
