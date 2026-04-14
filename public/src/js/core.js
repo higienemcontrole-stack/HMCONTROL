@@ -41,8 +41,16 @@ class Core {
 
     checkAuth() {
         const isLoginPage = window.location.pathname.includes('login.html');
-        if (!this.user && !isLoginPage) {
+        // Uma sessão válida exige tanto o objeto de usuário quanto o token de acesso
+        const isAuthenticated = this.user && this.token;
+
+        if (!isAuthenticated && !isLoginPage) {
+            console.log('[Core] Sessão ausente ou expirada. Redirecionando para login.');
+            localStorage.clear(); // Limpa resíduos para evitar loops
             window.location.href = 'login.html';
+        } else if (isAuthenticated && isLoginPage) {
+            console.log('[Core] Sessão ativa detectada. Redirecionando para portal.');
+            window.location.href = 'index.html';
         }
     }
 

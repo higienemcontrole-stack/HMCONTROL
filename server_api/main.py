@@ -107,7 +107,8 @@ async def login(credentials: UserLogin):
             "profile": profile
         }
     except Exception as e:
-        raise HTTPException(status_code=401, detail="Credenciais Inválidas")
+        logger.error(f"Erro no login para {credentials.email}: {str(e)}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=401, detail=f"Erro na autenticação: {str(e)}")
 
 
 @app.get("/api/admin/bootstrap")
@@ -290,8 +291,8 @@ async def delete_user(user_id: str):
 
 @app.get("/")
 async def root():
-    """Redireciona o acesso da raiz para a pagina inicial do frontend"""
-    return RedirectResponse(url="/index.html")
+    """Redireciona o acesso da raiz para a pagina de login"""
+    return RedirectResponse(url="/login.html")
 
 import traceback
 
@@ -300,7 +301,13 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
     try:
         data = await fetch_all_registros_from_db()
         if not data:
-            return {"filters": {"units": [], "months": [], "years": []}, "moments": [], "categories": [], "timeline": [], "units_data": []}
+            return {
+                "filters": {"units": [], "months": [], "years": []}, 
+                "moments": [], 
+                "categories": [], 
+                "timeline": [], 
+                "units": []  # Corrigido de units_data para units para sincronia com o frontend
+            }
             
         df = pd.DataFrame(data)
         
