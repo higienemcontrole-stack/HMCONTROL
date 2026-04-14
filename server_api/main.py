@@ -166,6 +166,10 @@ async def list_users():
                 "cargo": profile.get("cargo") or "user",
                 "acessos": profile.get("acessos") or [],
                 "ativo": profile.get("ativo", True),
+                "hospital": profile.get("hospital") or "",
+                "unidade": profile.get("unidade") or "",
+                "registro_profissional": profile.get("registro_profissional") or "",
+                "celular": profile.get("celular") or "",
                 "created_at": str(u.created_at) if hasattr(u, "created_at") else None,
                 "updated_at": profile.get("updated_at") or (str(u.updated_at) if hasattr(u, "updated_at") else None),
                 # Flag para indicar se o perfil ainda não foi configurado no banco
@@ -191,21 +195,38 @@ async def create_user(user: AdminUserCreate):
             metadata={"full_name": user.nome_completo}
         )
         
-        user_id = auth_res.user.id
+        new_uid = auth_res.user.id
         
-        # 2. Criar perfil na tabela perfis
-        profile_data = {
-            "id": user_id,
-            "email": user.email,
-            "nome_completo": user.nome_completo,
-            "cargo": user.cargo,
-            "acessos": user.acessos,
-            "ativo": True
-        }
-        
-        supabase.table("perfis").insert(profile_data).execute()
-        
-        return {"status": "success", "user_id": user_id}
+        # 2. Criar perfil
+        if new_uid:
+            payload = {
+                "id": new_uid,
+                "email": user.email,
+                "nome_completo": user.nome_completo,
+                "cargo": user.cargo,
+                "acessos": user.acessos,
+                "hospital": user.hospital,
+                "unidade": user.unidade,
+                "registro_profissional": user.registro_profissional,
+                "celular": user.celular,
+                "updated_at": datetime.now().isoformat()
+            }
+            supabase.table("perfis").insert(payload).execute()
+            
+            # Sincronizar nome e celular com Auth metadata
+            try:
+                auth_admin.session.auth.admin.update_user_by_id(
+                    new_uid, 
+                    attributes={"user_metadata": {
+                        "full_name": user.nome_completo,
+                        "display_name": user.nome_completo,
+                        "celular": user.celular
+                    }}
+                )
+            except Exception as e:
+                logger.warning(f"Usuário criado, mas falha ao sincronizar metadata: {str(e)}")
+            
+            return {"status": "success", "user_id": new_uid}
     except Exception as e:
         logger.error(f"Erro ao criar usuário admin: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -215,7 +236,7 @@ async def update_user(user_id: str, data: dict):
     """Atualiza ou cria (upsert) dados do perfil de um usuário"""
     try:
         # Permitir apenas campos específicos
-        safe_fields = ["nome_completo", "cargo", "acessos", "ativo", "email"]
+        safe_fields = ["nome_completo", "cargo", "acessos", "ativo", "email", "hospital", "unidade", "registro_profissional", "celular"]
         payload = {k: v for k, v in data.items() if k in safe_fields}
         
         if not payload:
@@ -226,6 +247,24 @@ async def update_user(user_id: str, data: dict):
         payload["updated_at"] = datetime.now().isoformat()
             
         res = supabase.table("perfis").upsert(payload).execute()
+        
+        # Sincronizar nome e celular com Auth metadata se fornecidos
+        meta = {}
+        if "nome_completo" in payload:
+            meta["full_name"] = payload["nome_completo"]
+            meta["display_name"] = payload["nome_completo"]
+        if "celular" in payload:
+            meta["celular"] = payload["celular"]
+            
+        if meta:
+            try:
+                auth_admin.session.auth.admin.update_user_by_id(
+                    user_id, 
+                    attributes={"user_metadata": meta}
+                )
+            except Exception as e:
+                logger.warning(f"Perfil atualizado, mas erro ao sincronizar Auth: {str(e)}")
+                
         return {"status": "success", "data": res.data}
     except Exception as e:
         logger.error(f"Erro ao atualizar perfil (upsert): {str(e)}")

@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HM Control — Meu Perfil</title>
+    <title>HM Control - Meu Perfil</title>
     <link rel="stylesheet" href="src/styles/design-system.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Fallback de Segurança - Navbar */
         .navbar-superior {
             display: flex !important;
             flex-direction: row !important;
             justify-content: space-between !important;
             align-items: center !important;
-            background: #2F5597 !important; /* Azul Master Excel */
+            background: #2F5597 !important;
             color: white !important;
             padding: 0 40px !important;
             height: 60px !important;
@@ -58,7 +57,7 @@
                 <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
                 <div class="nav-dropdown-content">
                     <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
-                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gest�o de Contas</a>
+                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gestão de Contas</a>
                     <a href="javascript:HM.backupSnapshots()"><i class="fas fa-database"></i> Snapshots (Backup)</a>
                     <a href="javascript:HM.setGoals()"><i class="fas fa-bullseye"></i> Configurar Metas</a>
                     <a href="javascript:HM.viewAuditLogs()"><i class="fas fa-history"></i> Logs de Auditoria</a>
@@ -91,19 +90,48 @@
                     <input type="email" id="prof-email" class="input-control" disabled style="background: #f1f5f9; cursor: not-allowed;">
                 </div>
                 
+                <div class="form-group">
+                    <label>Celular (SP: (XX) 9XXXX-XXXX)</label>
+                    <input type="text" id="prof-celular" class="input-control" placeholder="(11) 98765-4321" maxlength="15">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Unidade</label>
+                        <select id="prof-unidade" class="input-control">
+                            <option value="">Selecione...</option>
+                            <option value="Ambulatório - Convênio">Ambulatório - Convênio</option>
+                            <option value="Ambulatório - SUS">Ambulatório - SUS</option>
+                            <option value="CME">CME</option>
+                            <option value="Centro Cirúrgico">Centro Cirúrgico</option>
+                            <option value="Hospital Dia">Hospital Dia</option>
+                            <option value="PA">PA</option>
+                            <option value="Quimioterapia Ambulatorial">Quimioterapia Ambulatorial</option>
+                            <option value="SADT">SADT</option>
+                            <option value="UI - 1º andar - Bloco B">UI - 1º andar - Bloco B</option>
+                            <option value="UI - 1º andar - TCTH">UI - 1º andar - TCTH</option>
+                            <option value="UI - 2º andar">UI - 2º andar</option>
+                            <option value="UI - 3º andar">UI - 3º andar</option>
+                            <option value="UI - 4º andar">UI - 4º andar</option>
+                            <option value="UTI - GERAL">UTI - GERAL</option>
+                            <option value="UTI - TCTH">UTI - TCTH</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Hospital</label>
+                        <input type="text" id="prof-hospital" class="input-control" placeholder="Unidade Hospitalar">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Registro Profissional (COREN/CRM/ID)</label>
+                    <input type="text" id="prof-registro" class="input-control" placeholder="Ex: COREN 12345"> 
+                </div>
+                
                 <hr style="margin: 30px 0; border: 0; border-top: 1px solid var(--border);">
                 
                 <h3 class="text-subtitle" style="font-weight: 600; margin-bottom: 20px; color: var(--primary);">SEGURANÇA</h3>
                 
-                <div class="form-group">
-                    <label>Senha Atual</label>
-                    <input type="password" id="current-pass" class="input-control" placeholder="Confirme sua senha atual">
-                </div>
-                <div class="form-group">
-                    <label>Nova Senha</label>
-                    <input type="password" id="new-pass" class="input-control" placeholder="Mínimo 6 caracteres">
-                </div>
-
                 <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
                     <button type="submit" class="btn-login" style="width: auto; padding: 12px 30px;">Salvar Alterações</button>
                 </div>
@@ -118,19 +146,81 @@
     document.addEventListener('DOMContentLoaded', () => {
         const user = JSON.parse(localStorage.getItem('hm_user'));
         if (user) {
-            document.getElementById('prof-name').value = user.nome_completo || user.email;
-            document.getElementById('prof-email').value = user.email;
+            document.getElementById('prof-name').value = user.nome_completo || '';
+            document.getElementById('prof-email').value = user.email || '';
+            document.getElementById('prof-celular').value = user.celular || '';
+            document.getElementById('prof-hospital').value = user.hospital || '';
+            document.getElementById('prof-unidade').value = user.unidade || '';
+            document.getElementById('prof-registro').value = user.registro_profissional || '';
         }
+
+        // Máscara Celular SP
+        document.getElementById('prof-celular').addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, "");
+            if (v.length > 11) v = v.slice(0, 11);
+            if (v.length > 0) {
+                v = "(" + v;
+                if (v.length > 3) v = v.slice(0,3) + ") " + v.slice(3);
+                if (v.length > 10) v = v.slice(0,10) + "-" + v.slice(10);
+            }
+            e.target.value = v;
+        });
+
+        // Salvar Perfil
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            
+            const nome = document.getElementById('prof-name').value.trim();
+            const celular = document.getElementById('prof-celular').value.trim();
+            const hospital = document.getElementById('prof-hospital').value.trim();
+            const unidade = document.getElementById('prof-unidade').value;
+            const registro = document.getElementById('prof-registro').value.trim();
+
+            if (celular && !/^\(\d{2}\) 9\d{4}-\d{4}$/.test(celular)) {
+                alert('Celular inválido. Use o padrão (11) 9XXXX-XXXX.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Salvando...';
+
+            try {
+                const payload = {
+                    nome_completo: nome,
+                    celular,
+                    hospital,
+                    unidade,
+                    registro_profissional: registro
+                };
+                
+                const userId = JSON.parse(localStorage.getItem('hm_user')).id;
+                const res = await fetch(`/api/users/${userId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('hm_token')}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error('Erro ao salvar alterações.');
+
+                // Atualizar local
+                const updatedUser = { ...user, ...payload };
+                localStorage.setItem('hm_user', JSON.stringify(updatedUser));
+                
+                alert('Perfil atualizado com sucesso!');
+                window.location.reload();
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
     });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
