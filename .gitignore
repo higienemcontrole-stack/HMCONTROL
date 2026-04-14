@@ -8,10 +8,15 @@ server_api/test_rls*.py
 documentação/
 scripts/
 
-# Arquivos de Ambiente (Legado e Futuro)
+# Segurança e Segredos (Ambiente)
 .env
 .env.local
 .env.*.local
+config/.env
+server_api/config/.env
+.vercel
+.wrangler
+.turbo
 
 # Data and Spreadsheets
 *.xlsx
