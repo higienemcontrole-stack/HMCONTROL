@@ -38,6 +38,11 @@
     --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
 }
 
+body {
+    zoom: 0.8; /* Redução de 20% solicitada pelo usuário */
+    background: var(--bg-main);
+}
+
 .dashboard-wrapper {
     display: grid;
     grid-template-columns: 1fr; /* Removida barra lateral: filtros agora vão para o topo full-width */
