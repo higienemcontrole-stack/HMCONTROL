@@ -82,6 +82,21 @@ const apiService = {
         return res.json();
     },
 
+    async getValidations() {
+        const res = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.VALIDATIONS}`);
+        return res.json();
+    },
+
+    async saveRegistro(data) {
+        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.REGISTROS}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Erro ao salvar registro');
+        return response.json();
+    },
+
     async getAdminUsers() {
         const res = await this._fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_USERS}`);
         return res.json();

@@ -28,7 +28,7 @@
                 <a href="javascript:void(0)" class="nav-link"><i class="fas fa-cogs"></i> CONFIGURAÇÕES</a>
                 <div class="nav-dropdown-content">
                     <a href="javascript:HM.syncDatabase()"><i class="fas fa-sync"></i> Sistema (Sincronizar)</a>
-                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gest�o de Contas</a>
+                    <a href="javascript:HM.manageAccounts()"><i class="fas fa-users-cog"></i> Gest�o de Contas</a>
                     <a href="javascript:HM.backupSnapshots()"><i class="fas fa-database"></i> Snapshots (Backup)</a>
                     <a href="javascript:HM.setGoals()"><i class="fas fa-bullseye"></i> Configurar Metas</a>
                     <a href="javascript:HM.viewAuditLogs()"><i class="fas fa-history"></i> Logs de Auditoria</a>
@@ -170,9 +170,7 @@
 </div>
 
 <script src="/src/js/services/apiService.js"></script>
-<script src="/src/js/core.js?v=11.0.6"></script>
-<script src="/src/js/services/apiService.js?v=11.0.1"></script>
-<script src="/src/js/core.js?v=11.0.6"></script>
+<script src="/src/js/core.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         // Preencher observador se logado
@@ -195,10 +193,10 @@
                 });
             };
 
-            populate('reg-unidade', data.unidades, 'Selecione a unidade');
-            populate('reg-categoria', data.categorias, 'Selecione o cargo');
-            populate('reg-momento', data.momentos, 'Selecione o momento');
-            populate('reg-insumo', data.insumos, 'Selecione o produto');
+            populate('reg-unidade', data.unidades || [], 'Selecione a unidade');
+            populate('reg-categoria', data.profissionais || data.categorias || [], 'Selecione o cargo');
+            populate('reg-momento', data.momentos || [], 'Selecione o momento');
+            populate('reg-insumo', data.produtos || data.insumos || [], 'Selecione o produto');
 
         } catch (e) { 
             console.error("Falha ao carregar listas", e); 
