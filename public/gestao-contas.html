@@ -289,7 +289,7 @@
     <div class="confirm-box">
         <i class="fas fa-exclamation-triangle" style="font-size:40px;color:#dc2626;margin-bottom:14px;display:block;"></i>
         <h4>Excluir Usuário?</h4>
-        <p id="confirm-msg">Esta ação é <strong>irreversível</strong>. O usuário será removido do sistema e do Supabase Auth, perdendo todo o acesso.</p>
+        <p id="confirm-msg">Esta ação é <strong>irreversível</strong>. O usuário será removido do sistema, perdendo todo o acesso.</p>
         <div class="confirm-btns">
             <button class="btn btn-ghost" onclick="closeConfirm()">Cancelar</button>
             <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmDelete()"><i class="fas fa-trash"></i> Sim, Excluir</button>
@@ -321,7 +321,7 @@
 
     async function loadUsers() {
         const tbody = document.getElementById('users-tbody');
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Sincronizando com Supabase...</div></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner spinner"></i>Sincronizando com o servidor...</div></td></tr>`;
         try {
             const res = await fetch(`/api/users`, { headers: apiHeaders() });
             if (!res.ok) throw new Error(`Status ${res.status}`);
@@ -474,7 +474,7 @@
 
     function closeModal() { document.getElementById('user-modal').classList.remove('open'); }
 
-    // ─── Salvar (criar ou editar no Supabase) ─────────────────────────────────
+    // ─── Salvar (criar ou editar) ─────────────────────────────────────────────
     async function saveUser() {
         const nome   = document.getElementById('f-nome').value.trim();
         const email  = document.getElementById('f-email').value.trim();
@@ -573,7 +573,7 @@
     function askDelete(uid, name) {
         deleteTarget = uid;
         document.getElementById('confirm-msg').innerHTML =
-            `Esta ação é <strong>irreversível</strong>. O usuário <strong>${name}</strong> será removido da tabela de perfis e do Supabase Auth, perdendo todo o acesso.`;
+            `Esta ação é <strong>irreversível</strong>. O usuário <strong>${name}</strong> será removido do sistema de segurança, perdendo todo o acesso.`;
         document.getElementById('confirm-modal').classList.add('open');
     }
 

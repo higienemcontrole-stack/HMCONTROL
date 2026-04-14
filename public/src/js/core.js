@@ -56,7 +56,7 @@ class Core {
     refreshUI() {
         if (!this.user) return;
 
-        // Normalizar campos: Supabase usa full_name/role; backend usa nome_completo/cargo
+        // Normalizar campos: Servidor usa full_name/role; backend usa nome_completo/cargo
         this.user.nome_completo = this.user.nome_completo || this.user.full_name || this.user.email?.split('@')[0] || '';
         this.user.cargo         = this.user.cargo || this.user.role || 'user';
         this.user.acessos       = this.user.acessos || [];
@@ -75,7 +75,7 @@ class Core {
 
     applyAccessRestrictions() {
         if (!this.user) return;
-        // Aceitar tanto 'cargo' (backend) como 'role' (Supabase direto)
+        // Aceitar tanto 'cargo' (backend) como 'role' (Servidor direto)
         const isAdmin = this.user.cargo === 'admin' || this.user.role === 'admin';
         const allowedScreens = this.user.acessos || [];
 
@@ -101,32 +101,18 @@ class Core {
     }
 
     async syncUserProfile() {
-        if (!this.user || !this.user.id) return;
         try {
-            // Tentar via API backend primeiro
+            // Sincronização via API backend
             const res = await fetch(`${CORE_CONFIG.API_BASE}/api/user/profile?user_id=${this.user.id}`, {
                 headers: { 'Authorization': `Bearer ${this.token}` }
             });
             if (res.ok) {
                 const profile = await res.json();
                 this._mergeProfile(profile);
-                return;
             }
-        } catch (err) { /* ignora erro de rede */ }
-
-        // Fallback: ler direto da tabela profiles no Supabase
-        try {
-            const SUPA_URL = 'https://hmcontrol-prod.supabase.co';
-            const SUPA_KEY = '[PURGED_SERVICE_KEY]';
-            const r = await fetch(
-                `${SUPA_URL}/rest/v1/perfis?id=eq.${this.user.id}&select=nome_completo,email,cargo,acessos,ativo`,
-                { headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${this.token}` } }
-            );
-            if (r.ok) {
-                const rows = await r.json();
-                if (rows && rows[0]) this._mergeProfile(rows[0]);
-            }
-        } catch (err) { console.warn('[Core] Sync Profile Fallback Fail', err); }
+        } catch (err) { 
+            console.error('[Core] Falha ao sincronizar perfil com o servidor:', err);
+        }
     }
 
     _mergeProfile(profile) {
@@ -234,18 +220,10 @@ class Core {
         try {
             Swal.fire({
                 title: 'Sincronizando...',
-                text: 'Conectando ao Supabase para atualizar base local.',
+                text: 'Sincronizando dados com o servidor de segurança.',
+                allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
-            
-            const res = await fetch(`${CORE_CONFIG.API_BASE}/api/admin/sync`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${this.token}` }
-            });
-            
-            if (res.ok) {
-                Swal.fire('Sucesso', 'Base de dados sincronizada com o Supabase!', 'success');
-                // Refresh se estiver no dashboard ou tabulação
                 if (window.location.pathname.includes('dashboard') || window.location.pathname.includes('tabulacao')) {
                     setTimeout(() => window.location.reload(), 1500);
                 }
@@ -326,7 +304,7 @@ class Core {
                     [${new Date().toLocaleTimeString()}] Cache de dados: 1240 registros<br>
                     [${new Date().toLocaleTimeString()}] Sincronização: OK<br>
                     [${new Date().toLocaleTimeString()}] Z-Index Hardening aplicado<br>
-                    [${new Date().toLocaleTimeString()}] Conexão Supabase: Estabelecida
+                    [${new Date().toLocaleTimeString()}] Conexão Base de Dados: Estabelecida
                 </div>
             `,
             width: 600
@@ -379,7 +357,7 @@ class Core {
 
         try {
             // Se externalUser for passado (Admin), usamos os dados dele
-            // Caso contrário, buscamos do usuário logado diretamente do Supabase
+            // Caso contrário, buscamos do usuário logado diretamente do Servidor
             const targetId = externalUser ? externalUser.id : this.user.id;
             this.editingUserId = targetId;
             
@@ -456,7 +434,7 @@ class Core {
             });
 
             if (res.ok) {
-                alert('Sucesso: Perfil e Senha sincronizados no Supabase.');
+                alert('Sucesso: Perfil e Senha sincronizados no Servidor.');
                 this.closeProfileModal();
                 if (targetId === this.user.id) {
                     // Se editou o próprio perfil, atualiza sessão local
@@ -581,7 +559,7 @@ class Core {
                                     </select>
                                 </div>
                                 <button class="btn-modal-save" style="width: 100%; margin-top: 15px;" id="btn-create-user" onclick="HM.handleCreateUser()">
-                                    CRIAR CONTA NO SUPABASE
+                                    CRIAR CONTA NO SERVIDOR
                                 </button>
                             </div>
                         </div>
@@ -593,7 +571,7 @@ class Core {
     }
 
     async exportSnapshot() {
-        alert('Gerando Snapshot... Todos os dados do Supabase serão exportados para Excel.');
+        alert('Gerando Snapshot... Todos os dados da base serão exportados para Excel.');
         window.location.href = `${CORE_CONFIG.API_BASE}/api/excel/tabulation`; // Reaproveita a tabulação purificada
     }
 
@@ -602,7 +580,7 @@ class Core {
     }
 
     openAuditLogs() {
-        alert('Logs de Auditoria: Rastreando ações de Julia e outros administradores via Supabase.');
+        alert('Logs de Auditoria: Rastreando ações de admins via servidor.');
     }
 
     async openUserManagementModal() {
