@@ -66,20 +66,20 @@
         /* Modal */
         .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9000; justify-content: center; align-items: center; }
         .modal-bg.open { display: flex; }
-        .modal-box { background: white; border-radius: 14px; padding: 32px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
-        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--excel-light-blue); }
-        .modal-header h3 { font-size: 20px; font-weight: 800; color: var(--excel-blue); margin: 0; }
-        .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-        .form-field label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
-        .form-field input, .form-field select { padding: 10px 13px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-row { display: flex; flex-direction: column; gap: 8px; }
+        .modal-box { background: white; border-radius: 14px; padding: 24px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+        .modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); }
+        .modal-header h3 { font-size: 18px; font-weight: 800; color: var(--excel-blue); margin: 0; }
+        .form-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+        .form-field label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; }
+        .form-field input, .form-field select { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; outline: none; }
         .form-field input:focus, .form-field select:focus { border-color: var(--excel-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
 
         /* Permissões */
         .perm-section { margin-bottom: 16px; }
         .perm-title { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 10px; }
-        .perm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .perm-grid { display: flex; flex-direction: column; gap: 6px; }
         .perm-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.15s; }
         .perm-item:hover { border-color: var(--excel-blue); background: #eff6ff; }
         .perm-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--excel-blue); cursor: pointer; }
