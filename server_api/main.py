@@ -307,7 +307,31 @@ async def get_dashboard_data(
 async def get_tabulation():
     try:
         data = await fetch_all_registros_from_db(force_refresh=True)
-        return data
+
+        # Normalizar nomes de colunas para compatibilidade com frontend
+        column_map = {
+            "mes": "Mês (automático)",
+            "ano": "Ano (automático)",
+            "observador": "Observador",
+            "auditor": "Observador",
+            "unidade": "Unidade",
+            "profissional_auditado": "Profissional Auditado",
+            "momento_auditado": "Momento Auditado",
+            "produto_utilizado": "Produto utilizado",
+            "usuario_login": "Login",
+            "data_auditoria": "Data",
+            "horario_envio": "Horário",
+        }
+
+        normalized = []
+        for row in data:
+            new_row = {}
+            for key, value in row.items():
+                new_key = column_map.get(key, key)
+                new_row[new_key] = value
+            normalized.append(new_row)
+
+        return normalized
     except Exception as e:
         logger.error(f"Erro na tabulação: {traceback.format_exc()}")
         raise HTTPException(
