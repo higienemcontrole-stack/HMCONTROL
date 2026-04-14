@@ -11,17 +11,17 @@
         .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .breadcrumb a { color: var(--primary); text-decoration: none; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--Dados-blue); display: flex; align-items: center; gap: 12px; }
         .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
-        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--Dados-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--Dados-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-primary:hover { background: #365ba0; }
         .btn-sm { padding: 7px 14px; font-size: 12px; }
         .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         .filter-input { padding: 9px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; }
         .filter-input:focus { border-color: var(--primary); }
         .logs-table { width: 100%; border-collapse: collapse; }
-        .logs-table thead th { background: var(--excel-light-blue); padding: 12px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #8497b0; }
+        .logs-table thead th { background: var(--Dados-light-blue); padding: 12px 16px; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #1e3a8a; letter-spacing: 0.5px; text-align: left; border-bottom: 2px solid #8497b0; }
         .logs-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: 0.15s; }
         .logs-table tbody tr:hover { background: #f8fafc; }
         .logs-table tbody td { padding: 13px 16px; font-size: 13px; color: #1e293b; }
@@ -37,11 +37,11 @@
         .page-info { font-size: 13px; color: #64748b; }
         .page-btns { display: flex; gap: 6px; }
         .page-btn { padding: 8px 14px; border: 1px solid #e2e8f0; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .page-btn.active { background: var(--excel-blue); color: white; border-color: var(--excel-blue); }
+        .page-btn.active { background: var(--Dados-blue); color: white; border-color: var(--Dados-blue); }
         .page-btn:hover:not(.active) { background: #f8fafc; }
         .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
         .sum-box { background: white; border-radius: 10px; padding: 18px; border: 1px solid #e2e8f0; text-align: center; }
-        .sum-box .val { font-size: 26px; font-weight: 800; color: var(--excel-blue); }
+        .sum-box .val { font-size: 26px; font-weight: 800; color: var(--Dados-blue); }
         .sum-box .lbl { font-size: 12px; color: #64748b; margin-top: 4px; }
         .mono { font-family: monospace; font-size: 11px; color: #94a3b8; }
     </style>
@@ -90,7 +90,7 @@
         </div>
 
         <div class="page-header">
-            <div class="page-title"><i class="fas fa-history" style="color:var(--excel-blue)"></i> Logs de Auditoria</div>
+            <div class="page-title"><i class="fas fa-history" style="color:var(--Dados-blue)"></i> Logs de Auditoria</div>
             <button class="btn-primary" onclick="exportLogs()"><i class="fas fa-file-csv"></i> Exportar Logs</button>
         </div>
 
@@ -102,7 +102,7 @@
         </div>
 
         <div class="section-card">
-            <div class="section-title"><i class="fas fa-filter" style="color:var(--excel-blue)"></i> Filtros</div>
+            <div class="section-title"><i class="fas fa-filter" style="color:var(--Dados-blue)"></i> Filtros</div>
             <div class="filters">
                 <input class="filter-input" type="text" id="filter-search" placeholder="🔍 Buscar usuario, ação..." oninput="applyFilters()">
                 <select class="filter-input" id="filter-type" onchange="applyFilters()">
@@ -159,7 +159,7 @@
         const types = ['login', 'logout', 'create', 'update', 'delete', 'export', 'sync'];
         const descs = {
             login: 'Usuário autenticado com sucesso', logout: 'Sessão encerrada', create: 'Novo registro de higienização criado',
-            update: 'Registro atualizado', delete: 'Registro removido do sistema', export: 'Relatório exportado em Excel', sync: 'Sincronização com banco de dados realizada'
+            update: 'Registro atualizado', delete: 'Registro removido do sistema', export: 'Relatório exportado em Dados', sync: 'Sincronização com banco de dados realizada'
         };
         const logs = [];
         for (let i = 0; i < 80; i++) {

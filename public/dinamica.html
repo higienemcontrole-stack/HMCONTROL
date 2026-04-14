@@ -131,7 +131,7 @@
 
         <div class="card-premium">
             <div id="pivot-container" style="overflow-x: auto;">
-                <p class="text-subtitle">Processando dados do Excel...</p>
+                <p class="text-subtitle">Processando dados do Dados...</p>
             </div>
         </div>
     </main>
@@ -142,7 +142,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         try {
-            const response = await fetch('/api/excel/pivot');
+            const response = await fetch('/api/Dados/pivot');
             const data = await response.json();
             
             if (!data || data.length === 0) {

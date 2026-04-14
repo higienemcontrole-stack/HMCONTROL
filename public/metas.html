@@ -11,10 +11,10 @@
         .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .breadcrumb a { color: var(--primary); text-decoration: none; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--Dados-blue); display: flex; align-items: center; gap: 12px; }
         .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
-        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--Dados-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--Dados-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-primary:hover { background: #365ba0; transform: translateY(-1px); }
         .btn-success { background: #16a34a; }
         .btn-success:hover { background: #15803d; }
@@ -29,7 +29,7 @@
         .meta-value.green { color: #16a34a; }
         .meta-value.orange { color: #f59e0b; }
         .meta-value.red { color: #dc2626; }
-        input[type=range] { width: 100%; accent-color: var(--excel-blue); }
+        input[type=range] { width: 100%; accent-color: var(--Dados-blue); }
         .progress-bar-bg { background: #e2e8f0; border-radius: 8px; height: 8px; margin-top: 4px; overflow: hidden; }
         .progress-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #16a34a, #4ade80); transition: width 0.3s; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -37,7 +37,7 @@
         .form-field label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.04em; }
         .form-field input, .form-field select { padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
         .form-field input:focus, .form-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .global-meta { display: flex; align-items: center; gap: 20px; padding: 20px; background: linear-gradient(135deg, var(--excel-blue), #6366f1); border-radius: 12px; color: white; margin-bottom: 24px; }
+        .global-meta { display: flex; align-items: center; gap: 20px; padding: 20px; background: linear-gradient(135deg, var(--Dados-blue), #6366f1); border-radius: 12px; color: white; margin-bottom: 24px; }
         .global-meta-val { font-size: 48px; font-weight: 900; }
         .global-meta-info { display: flex; flex-direction: column; gap: 4px; }
         .global-meta-label { font-size: 14px; opacity: 0.8; }
@@ -89,7 +89,7 @@
         </div>
 
         <div class="page-header">
-            <div class="page-title"><i class="fas fa-bullseye" style="color:var(--excel-blue)"></i> Configurar Metas</div>
+            <div class="page-title"><i class="fas fa-bullseye" style="color:var(--Dados-blue)"></i> Configurar Metas</div>
         </div>
 
         <!-- Meta Global -->
@@ -107,7 +107,7 @@
 
         <!-- Nova Meta por Unidade -->
         <div class="section-card">
-            <div class="section-title"><i class="fas fa-plus-circle" style="color:var(--excel-blue)"></i> Definir Meta por Unidade</div>
+            <div class="section-title"><i class="fas fa-plus-circle" style="color:var(--Dados-blue)"></i> Definir Meta por Unidade</div>
             <div class="form-row">
                 <div class="form-field">
                     <label>Unidade Hospitalar</label>
@@ -150,7 +150,7 @@
 
         <!-- Metas Existentes -->
         <div class="section-card">
-            <div class="section-title"><i class="fas fa-list-ul" style="color:var(--excel-blue)"></i> Metas por Unidade</div>
+            <div class="section-title"><i class="fas fa-list-ul" style="color:var(--Dados-blue)"></i> Metas por Unidade</div>
             <div class="metas-grid" id="metas-grid">
                 <div style="text-align:center;padding:40px;color:#94a3b8;grid-column:1/-1;"><i class="fas fa-spinner fa-spin" style="font-size:32px;"></i><br>Carregando metas...</div>
             </div>

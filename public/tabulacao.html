@@ -9,7 +9,7 @@
     <style>
         /* Fallback de Segurança - Navbar */
 
-        /* Estilo Excel Twin */
+        /* Estilo Dados Twin */
         .tabulacao-container {
             padding: 20px;
             background: #f4f7f9;
@@ -38,7 +38,7 @@
             min-width: 120px;
         }
 
-        .excel-table-wrapper {
+        .Dados-table-wrapper {
             background: white;
             border: 1px solid #ACB9CA;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
@@ -55,7 +55,7 @@
         }
 
         thead th {
-            background: #404040; /* Cinza Escuro Excel Header */
+            background: #404040; /* Cinza Escuro Dados Header */
             color: white;
             padding: 8px 10px;
             border: 1px solid #777;
@@ -79,7 +79,7 @@
         }
 
         tbody tr:nth-child(even) { background: #F8F9FB; }
-        tbody tr:hover { background: #E2EFDA; } /* Cor de hover suave do Excel */
+        tbody tr:hover { background: #E2EFDA; } /* Cor de hover suave do Dados */
 
         /* Estilo para colunas específicas para otimizar espaço */
         .col-mes, .col-ano { width: 60px; text-align: center; }
@@ -124,7 +124,7 @@
 
         /* Botão Novo Registro */
         .btn-add-record {
-            background: #70AD47; /* Verde Excel */
+            background: #70AD47; /* Verde Dados */
             color: white;
             border: none;
             padding: 8px 15px;
@@ -285,7 +285,7 @@
             </div>
         </div>
 
-        <div class="excel-table-wrapper">
+        <div class="Dados-table-wrapper">
             <table id="main-table">
                 <thead>
                     <tr id="table-headers">
@@ -338,7 +338,7 @@
         
         // Carregar Validações se ainda não carregadas
         try {
-            const res = await fetch('/api/excel/validations');
+            const res = await fetch('/api/Dados/validations');
             const validations = await res.json();
             
             populateSelect('add-unidade', validations.unidades);
@@ -415,7 +415,7 @@
 
     async function loadData() {
         try {
-            const res = await fetch('/api/excel/tabulation?cacheBust=' + new Date().getTime());
+            const res = await fetch('/api/Dados/tabulation?cacheBust=' + new Date().getTime());
             rawData = await res.json();
             
             // Popular Filtro de Ano Dinamicamente

@@ -528,7 +528,7 @@ class Core {
             const modalHtml = `
                 <div class="modal-overlay" id="admin-user-modal">
                     <div class="modal-card large">
-                        <div class="modal-header" style="background: var(--excel-blue); color: white;">
+                        <div class="modal-header" style="background: var(--Dados-blue); color: white;">
                             <div class="modal-title" style="color: white;"><i class="fas fa-users-cog"></i> GESTÃO DE CONTAS</div>
                             <button class="btn-close-modal" onclick="HM.closeUserModal()" style="color: white;">&times;</button>
                         </div>
@@ -571,8 +571,8 @@ class Core {
     }
 
     async exportSnapshot() {
-        alert('Gerando Snapshot... Todos os dados da base serão exportados para Excel.');
-        window.location.href = `${CORE_CONFIG.API_BASE}/api/excel/tabulation`; // Reaproveita a tabulação purificada
+        alert('Gerando Snapshot... Todos os dados da base serão exportados para Dados.');
+        window.location.href = `${CORE_CONFIG.API_BASE}/api/data/tabulation`; // Reaproveita a tabulação purificada
     }
 
     openMetas() {

@@ -11,10 +11,10 @@
         .breadcrumb { font-size: 13px; color: #64748b; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         .breadcrumb a { color: var(--primary); text-decoration: none; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .page-title { font-size: 24px; font-weight: 800; color: var(--excel-blue); display: flex; align-items: center; gap: 12px; }
+        .page-title { font-size: 24px; font-weight: 800; color: var(--Dados-blue); display: flex; align-items: center; gap: 12px; }
         .section-card { background: white; border-radius: 10px; padding: 28px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
-        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--excel-light-blue); display: flex; align-items: center; gap: 10px; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--excel-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--Dados-light-blue); display: flex; align-items: center; gap: 10px; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: var(--Dados-blue); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
         .btn-primary:hover { background: #365ba0; transform: translateY(-1px); }
         .btn-danger { background: #dc2626; }
         .btn-danger:hover { background: #b91c1c; }
@@ -24,20 +24,20 @@
         .action-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
         .snap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
         .snap-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 10px; transition: 0.2s; }
-        .snap-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-color: var(--excel-blue); }
+        .snap-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-color: var(--Dados-blue); }
         .snap-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .snap-name { font-weight: 800; font-size: 15px; color: #1e293b; }
         .snap-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
         .snap-badge-auto { background: #dbeafe; color: #1d4ed8; }
         .snap-badge-manual { background: #f0fdf4; color: #16a34a; }
         .snap-meta { font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 6px; }
-        .snap-size { font-size: 24px; font-weight: 800; color: var(--excel-blue); }
+        .snap-size { font-size: 24px; font-weight: 800; color: var(--Dados-blue); }
         .snap-actions { display: flex; gap: 8px; margin-top: 6px; }
         .empty-state { text-align: center; padding: 60px; color: #94a3b8; }
         .empty-state i { font-size: 48px; margin-bottom: 16px; display: block; }
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
         .stat-box { background: white; border-radius: 10px; padding: 20px; border: 1px solid #e2e8f0; text-align: center; }
-        .stat-box .val { font-size: 28px; font-weight: 800; color: var(--excel-blue); }
+        .stat-box .val { font-size: 28px; font-weight: 800; color: var(--Dados-blue); }
         .stat-box .lbl { font-size: 12px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
         .spinner { animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -87,7 +87,7 @@
         </div>
 
         <div class="page-header">
-            <div class="page-title"><i class="fas fa-database" style="color:var(--excel-blue)"></i> Snapshots & Backup</div>
+            <div class="page-title"><i class="fas fa-database" style="color:var(--Dados-blue)"></i> Snapshots & Backup</div>
             <button class="btn-primary" onclick="createSnapshot()" id="btn-create-snap">
                 <i class="fas fa-plus-circle"></i> Criar Snapshot
             </button>
@@ -100,10 +100,10 @@
         </div>
 
         <div class="section-card">
-            <div class="section-title"><i class="fas fa-archive" style="color:var(--excel-blue)"></i> Snapshots Disponíveis</div>
+            <div class="section-title"><i class="fas fa-archive" style="color:var(--Dados-blue)"></i> Snapshots Disponíveis</div>
             <div class="action-row">
                 <button class="btn-primary btn-success" onclick="exportAllCSV()"><i class="fas fa-file-csv"></i> Exportar Dados (CSV)</button>
-                <button class="btn-primary" onclick="exportAllExcel()"><i class="fas fa-file-excel"></i> Exportar Dados (Excel)</button>
+                <button class="btn-primary" onclick="exportAllDados()"><i class="fas fa-file-Dados"></i> Exportar Dados (Dados)</button>
             </div>
             <div class="snap-grid" id="snaps-container">
                 <div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Carregando snapshots...</div>
@@ -216,9 +216,9 @@
         window.open(`/api/export/csv?token=${token}`, '_blank');
     }
 
-    async function exportAllExcel() {
+    async function exportAllDados() {
         const token = localStorage.getItem('hm_token');
-        window.open(`/api/export/excel?token=${token}`, '_blank');
+        window.open(`/api/export/Dados?token=${token}`, '_blank');
     }
 
     document.addEventListener('DOMContentLoaded', loadSnapshots);

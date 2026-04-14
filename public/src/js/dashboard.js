@@ -1,4 +1,4 @@
-// Dashboard Logic - HM Control Excel Twin Edition
+// Dashboard Logic - HM Control Dados Twin Edition
 let dashboardCharts = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initDashboard(unit = 'TODAS', month = 'TODOS', year = 'TODOS') {
     try {
-        const url = `/api/excel/dashboard?unit=${unit}&month=${month}&year=${year}`;
+        const url = `/api/data/dashboard?unit=${unit}&month=${month}&year=${year}`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -87,7 +87,7 @@ function updateSlicerUI(container, items, currentVal, defaultLabel, onSelect) {
 }
 
 function renderCharts(data, currentYear) {
-    const defaultColors = { sim: '#ED7D31', nao: '#4472C4' }; // Padrão Excel (Novo)
+    const defaultColors = { sim: '#ED7D31', nao: '#4472C4' }; // Padrão Dados (Novo)
     const momentsColors = { sim: '#FFC000', nao: '#ED7D31' }; // Específico do 1º gráfico da imagem
 
     // 1. Gráfico Principal (Top Large) - Adesão 5 Momentos
@@ -159,8 +159,8 @@ function createGroupedBar(canvasId, items, colors, showMeta, metaValue = 85, cur
 
     // Se for gráfico de adesão (porcentagem), ajustamos a escala e a meta
     if (showMeta) {
-        // Para bater com o Excel, o ideal é o gráfico mostrar as barras mas as pessoas verem a adesão.
-        // No Excel da imagem, as barras são agrupadas SIM/NÃO em valores absolutos, e a linha de meta parece cruzar os eixos.
+        // Para bater com o Dados, o ideal é o gráfico mostrar as barras mas as pessoas verem a adesão.
+        // No Dados da imagem, as barras são agrupadas SIM/NÃO em valores absolutos, e a linha de meta parece cruzar os eixos.
         // Vamos colocar a linha de meta como uma anotação de "valor" se fosse % , mas aqui são valores absolutos.
         // Vou apenas renderizar as barras conforme a imagem.
     }

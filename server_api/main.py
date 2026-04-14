@@ -7,7 +7,7 @@ import os
 import logging
 from datetime import datetime
 from dotenv import load_dotenv
-from supabase import create_client, Client
+from db import create_client, Client
 
 # Ajuste de path para encontrar o config/.env corretamente
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,11 +23,11 @@ import pandas as pd
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Prioriza variáveis do sistema (Dashboard Vercel) over arquivos locais
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY")
+DB_URL = os.environ.get("DB_URL")
+DB_KEY = os.environ.get("DB_SERVICE_KEY") or os.environ.get("DB_PUBLIC_KEY")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    logger.error(f"ERRO CRÍTICO: Variáveis do Supabase ausentes.")
+if not DB_URL or not DB_KEY:
+    logger.error(f"ERRO CRÍTICO: Variáveis de infraestrutura ausentes.")
 
 # --- INICIALIZAÇÃO ÚNICA DO APP ---
 app = FastAPI(title="HM CONTROL API")
@@ -41,13 +41,13 @@ app.add_middleware(
 )
 
 # Inicializar Componentes
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-auth_admin = AuthManager(SUPABASE_URL, SUPABASE_KEY)
+db = create_client(DB_URL, DB_KEY)
+auth_admin = AuthManager(DB_URL, DB_KEY)
 
-# --- CACHE DE DADOS SUPABASE ---
+# --- CACHE DE DADOS db ---
 GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
 
-async def fetch_all_registros_from_supabase(force_refresh=False):
+async def fetch_all_registros_from_db(force_refresh=False):
     global GLOBAL_DATA_CACHE
     now = datetime.now()
     
@@ -59,8 +59,8 @@ async def fetch_all_registros_from_supabase(force_refresh=False):
         all_registros = []
         offset = 0
         while True:
-            # Busca em blocos de 1000 (limite do Supabase)
-            chunk = supabase.table("registros").select("*").order("created_at", desc=True).range(offset, offset + 999).execute()
+            # Busca em blocos de 1000 (limite do db)
+            chunk = db.table("registros").select("*").order("created_at", desc=True).range(offset, offset + 999).execute()
             if not chunk.data: break
             all_registros.extend(chunk.data)
             offset += 1000
@@ -71,18 +71,18 @@ async def fetch_all_registros_from_supabase(force_refresh=False):
         GLOBAL_DATA_CACHE = {"records": real_records, "last_sync": now}
         return real_records
     except Exception as e:
-        logger.error(f"Erro ao buscar no Supabase: {str(e)}")
+        logger.error(f"Erro ao buscar no db: {str(e)}")
         return GLOBAL_DATA_CACHE["records"] if GLOBAL_DATA_CACHE["records"] else []
 
 # --- ROTAS DE AUTENTICAÇÃO ---
 @app.post("/api/auth/login")
 async def login(credentials: UserLogin):
     try:
-        res = supabase.auth.sign_in_with_password({"email": credentials.email, "password": credentials.password})
+        res = db.auth.sign_in_with_password({"email": credentials.email, "password": credentials.password})
 
         # Buscar profile na tabela profiles (ou view perfis)
         try:
-            profile_res = supabase.table("perfis").select("*").eq("id", res.user.id).single().execute()
+            profile_res = db.table("perfis").select("*").eq("id", res.user.id).single().execute()
             profile = profile_res.data or {}
         except Exception:
             profile = {}
@@ -132,9 +132,9 @@ async def bootstrap_admin(token: str):
             "cargo": "admin",
             "acessos": ["dashboard", "registro", "tabulacao", "dinamica", "validacoes", "configuracoes"]
         }
-        profiles = supabase.table("perfis").select("id").eq("email", email).execute()
+        profiles = db.table("perfis").select("id").eq("email", email).execute()
         if len(profiles.data) > 0:
-            supabase.table("perfis").update(prof_data).eq("id", profiles.data[0]["id"]).execute()
+            db.table("perfis").update(prof_data).eq("id", profiles.data[0]["id"]).execute()
             return {"status": "success", "message": "Resgate concluido."}
         return {"status": "partial", "message": "Usuario Auth criado. Logue para ativar perfil."}
     except Exception as e:
@@ -146,13 +146,13 @@ async def bootstrap_admin(token: str):
 async def list_users():
     """Lista unificada de usuários: Auth + Tabela de Perfis"""
     try:
-        # 1. Buscar todos os usuários do Supabase Auth (Admin)
+        # 1. Buscar todos os usuários do db Auth (Admin)
         auth_users = auth_admin.list_users_admin()
         # Garante que temos uma lista de objetos do tipo User
         users_list = auth_users if isinstance(auth_users, list) else (auth_users.users if hasattr(auth_users, 'users') else [])
         
         # 2. Buscar todos os registros da tabela perfis
-        profiles_res = supabase.table("perfis").select("*").execute()
+        profiles_res = db.table("perfis").select("*").execute()
         profiles_map = {p['id']: p for p in profiles_res.data}
         
         # 3. Mesclar dados
@@ -182,13 +182,13 @@ async def list_users():
         return unified
     except Exception as e:
         logger.error(f"Erro ao unificar lista de usuários: {str(e)}")
-        raise HTTPException(status_code=500, detail="Erro ao sincronizar contas do Supabase.")
+        raise HTTPException(status_code=500, detail="Erro ao sincronizar contas do db.")
 
 @app.post("/api/users")
 async def create_user(user: AdminUserCreate):
     """Cria um usuário no Auth e o respectivo perfil na tabela perfis"""
     try:
-        # 1. Criar no Supabase Auth (Admin)
+        # 1. Criar no db Auth (Admin)
         auth_res = auth_admin.create_user_admin(
             email=user.email,
             password=user.password,
@@ -211,7 +211,7 @@ async def create_user(user: AdminUserCreate):
                 "celular": user.celular,
                 "updated_at": datetime.now().isoformat()
             }
-            supabase.table("perfis").insert(payload).execute()
+            db.table("perfis").insert(payload).execute()
             
             # Sincronizar nome e celular com Auth metadata
             try:
@@ -246,7 +246,7 @@ async def update_user(user_id: str, data: dict):
         payload["id"] = user_id
         payload["updated_at"] = datetime.now().isoformat()
             
-        res = supabase.table("perfis").upsert(payload).execute()
+        res = db.table("perfis").upsert(payload).execute()
         
         # Sincronizar nome e celular com Auth metadata se fornecidos
         meta = {}
@@ -272,12 +272,12 @@ async def update_user(user_id: str, data: dict):
 
 @app.delete("/api/users/{user_id}")
 async def delete_user(user_id: str):
-    """Remove o usuário da tabela perfis e do Supabase Auth"""
+    """Remove o usuário da tabela perfis e do db Auth"""
     try:
         # 1. Remover da tabela perfis
-        supabase.table("perfis").delete().eq("id", user_id).execute()
+        db.table("perfis").delete().eq("id", user_id).execute()
         
-        # 2. Remover do Supabase Auth (Admin)
+        # 2. Remover do db Auth (Admin)
         try:
             auth_admin.delete_user_admin(user_id)
         except Exception as auth_err:
@@ -295,10 +295,10 @@ async def root():
 
 import traceback
 
-@app.get("/api/excel/dashboard")
+@app.get("/api/data/dashboard")
 async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
     try:
-        data = await fetch_all_registros_from_supabase()
+        data = await fetch_all_registros_from_db()
         if not data:
             return {"filters": {"units": [], "months": [], "years": []}, "moments": [], "categories": [], "timeline": [], "units_data": []}
             
@@ -335,22 +335,22 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         }
     except Exception as e:
         logger.error(f"Erro no dashboard purificado: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail="Erro interno ao processar dados vivos do Supabase.")
+        raise HTTPException(status_code=500, detail="Erro interno ao processar dados vivos do db.")
 
-@app.get("/api/excel/tabulation")
+@app.get("/api/data/tabulation")
 async def get_tabulation():
     try:
-        data = await fetch_all_registros_from_supabase(force_refresh=True)
+        data = await fetch_all_registros_from_db(force_refresh=True)
         return data
     except Exception as e:
         logger.error(f"Erro na tabulação: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
-@app.get("/api/excel/validations")
+@app.get("/api/data/validations")
 async def get_validations():
-    """Retorna as listas oficiais diretamente do Supabase (Sync Realtime)"""
+    """Retorna as listas oficiais diretamente do db (Sync Realtime)"""
     try:
-        data = await fetch_all_registros_from_supabase()
+        data = await fetch_all_registros_from_db()
         df = pd.DataFrame(data)
         
         # Extrai valores únicos existentes no banco como verdade absoluta
@@ -378,24 +378,24 @@ async def clear_cache():
 
 @app.post("/api/admin/sync")
 async def sync_database():
-    """Força sincronização total com Supabase"""
+    """Força sincronização total com db"""
     try:
-        await fetch_all_registros_from_supabase(force_refresh=True)
+        await fetch_all_registros_from_db(force_refresh=True)
         return {"status": "success", "message": "Sincronização concluída."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/excel/pivot")
+@app.get("/api/data/pivot")
 async def get_pivot():
     try:
-        data = await fetch_all_registros_from_supabase()
+        data = await fetch_all_registros_from_db()
         if not data:
             return []
             
         df = pd.DataFrame(data)
         
         # Gerar Pivot Table: Unidade vs Momento Auditado (Volume)
-        # Bate com a lógica da Tabela Dinâmica do Excel original
+        # Bate com a lógica da Tabela Dinâmica do sistema original
         pivot = pd.crosstab(
             df["unidade"], 
             df["momento_auditado"], 
@@ -413,11 +413,11 @@ async def get_pivot():
 @app.get("/api/admin/users")
 async def list_users():
     try:
-        # 1. Busca todos os usuários reais do Supabase Auth
+        # 1. Busca todos os usuários reais do db Auth
         auth_users = auth_admin.list_users_admin()
         
         # 2. Busca todos os perfis configurados na tabela
-        profiles_res = supabase.table("perfis").select("*").execute()
+        profiles_res = db.table("perfis").select("*").execute()
         profiles_map = {p["id"]: p for p in profiles_res.data}
         
         # 3. Faz o Merge e Filtro
@@ -454,12 +454,12 @@ async def create_user(user: AdminUserCreate):
         "cargo": user.cargo,
         "acessos": user.acessos
     }
-    supabase.table("perfis").insert(profile_data).execute()
+    db.table("perfis").insert(profile_data).execute()
     return {"status": "success"}
 
 @app.delete("/api/admin/users/{user_id}")
 async def delete_user(user_id: str):
-    supabase.table("perfis").delete().eq("id", user_id).execute()
+    db.table("perfis").delete().eq("id", user_id).execute()
     auth_admin.delete_auth_user(user_id)
     return {"status": "success"}
 
@@ -467,7 +467,7 @@ async def delete_user(user_id: str):
 async def get_profile(user_id: str = None):
     if not user_id:
         raise HTTPException(status_code=400, detail="ID de usuário não fornecido.")
-    profile = supabase.table("perfis").select("*").eq("id", user_id).single().execute()
+    profile = db.table("perfis").select("*").eq("id", user_id).single().execute()
     return profile.data
 
 @app.post("/api/user/update")
@@ -477,10 +477,10 @@ async def update_user_profile(data: dict):
         user_id = data.get("user_id")
         if not user_id: raise HTTPException(status_code=400, detail="User ID obrigatório")
         
-        # 1. Se houver nova senha, atualizar no Supabase Auth
+        # 1. Se houver nova senha, atualizar no db Auth
         new_password = data.get("password")
         if new_password:
-            auth_admin.supabase_admin.auth.admin.update_user_by_id(
+            auth_admin.db_admin.auth.admin.update_user_by_id(
                 user_id, 
                 {"password": new_password}
             )
@@ -494,11 +494,11 @@ async def update_user_profile(data: dict):
         }
         
         # Tenta atualizar
-        res = supabase.table("perfis").update(profile_data).eq("id", user_id).execute()
+        res = db.table("perfis").update(profile_data).eq("id", user_id).execute()
         
         # Se não existia o perfil (Pending), insere agora
         if not res.data:
-            supabase.table("perfis").insert(profile_data).execute()
+            db.table("perfis").insert(profile_data).execute()
             
         return {"status": "success"}
     except Exception as e:
@@ -529,7 +529,7 @@ async def save_registro(reg: RegistroCreate):
             "horario_envio": datetime.now().strftime("%H:%M:%S")
         }
         
-        supabase.table("registros").insert(payload).execute()
+        db.table("registros").insert(payload).execute()
         return {"status": "success"}
     except Exception as e:
         logger.error(f"Erro ao salvar registro: {str(e)}")
@@ -539,7 +539,7 @@ async def save_registro(reg: RegistroCreate):
 async def delete_registro(reg_id: str):
     """Exclui uma auditoria específica pelo ID único"""
     try:
-        supabase.table("registros").delete().eq("id", reg_id).execute()
+        db.table("registros").delete().eq("id", reg_id).execute()
         return {"status": "success", "message": "Registro excluído com sucesso."}
     except Exception as e:
         logger.error(f"Erro ao excluir registro: {str(e)}")

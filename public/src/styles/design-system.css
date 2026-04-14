@@ -9,11 +9,11 @@
     --surface: #FFFFFF;
     --border: #ACB9CA;
     
-    /* Excel Twin Palette */
-    --excel-blue: #4472C4;
-    --excel-orange: #ED7D31;
-    --excel-light-blue: #D9E1F2;
-    --excel-header-blue: #4472C4;
+    /* Brand Palette (Legacy Dados Twin) */
+    --brand-primary: #4472C4;
+    --brand-accent: #ED7D31;
+    --brand-surface-light: #D9E1F2;
+    --brand-header-bg: #4472C4;
     --success: #16A34A;
     --warning: #F59E0B;
     --danger: #DC2626;
@@ -25,7 +25,7 @@
     --nav-text: #ffffff;
     --nav-text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
     --nav-text-muted: rgba(255, 255, 255, 0.7);
-    --nav-accent: #ED7D31;
+    --nav-accent: var(--brand-accent);
     --nav-shadow: 0 10px 40px rgba(0,0,0,0.5);
     
     /* Tipografia */
@@ -84,7 +84,7 @@ body {
 }
 
 .slicer-header {
-    background: var(--excel-light-blue);
+    background: var(--brand-surface-light);
     padding: 8px 12px;
     font-weight: 700;
     font-size: 13px;
@@ -136,28 +136,25 @@ body {
 
 .charts-grid {
     display: grid;
-    grid-template-columns: 1.8fr 1fr; /* Proporção 2:1 do Excel em telas grandes */
+    grid-template-columns: 1.8fr 1fr; /* Proporção 2:1 em telas grandes */
     gap: 20px;
 }
 
 @media (max-width: 1024px) {
     .charts-grid {
-        grid-template-columns: 1fr; /* Empilha gráficos em tablets/mobile */
-        gap: 15px;
-    }
-}
+        grid-template-columns: 1fr; /* Empilha gráficos em tablet.slicer-item.active { background: #BDD7EE; font-weight: 700; color: #1e3a8a; }
 
-.chart-card-excel {
+.chart-card-data {
     background: white;
     border: 1px solid #D1D5DB;
     padding: 15px 20px 25px;
     border-radius: 4px;
     box-shadow: var(--shadow-sm);
-    height: 450px; /* Altura firme para Desktop */
-    display: flex; /* Mudança para Flex para melhor controle do container interno */
+    height: 450px; 
+    display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 0; /* Vital para estabilizar o CSS Grid */
+    min-height: 0;
 }
 
 .chart-container {
@@ -167,25 +164,25 @@ body {
     width: 100%;
 }
 
-.chart-card-excel.wide { grid-column: span 2; height: 450px; }
-.chart-card-excel.large { grid-column: span 1; height: 450px; }
+.chart-card-data.wide { grid-column: span 2; height: 450px; }
+.chart-card-data.large { grid-column: span 1; height: 450px; }
 
 @media (max-width: 1024px) {
-    .chart-card-excel.wide, .chart-card-excel.large {
+    .chart-card-data.wide, .chart-card-data.large {
         grid-column: span 1;
         height: 350px; /* Altura ideal para celulares */
     }
 }
 
-.chart-card-excel h3 {
+.chart-card-data h3 {
     text-align: center;
     font-size: 14px;
-    color: #4B2C82; /* Cor de título do Excel Dashboard */
+    color: #4B2C82; 
     margin-bottom: 20px;
     text-transform: uppercase;
     font-weight: 800;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--excel-blue);
+    border-bottom: 2px solid var(--brand-primary);
     padding-bottom: 10px;
 }
 
@@ -257,7 +254,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--excel-header-blue);
+    background: var(--brand-header-bg);
     color: var(--nav-text);
     padding: 0 30px;
     height: 60px;
@@ -521,7 +518,7 @@ body.menu-open .menu-overlay {
 .modal-title {
     font-size: 18px;
     font-weight: 800;
-    color: var(--excel-blue);
+    color: var(--brand-primary);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -659,8 +656,8 @@ body.menu-open .menu-overlay {
     gap: 12px;
     margin: 30px 0 20px 0;
     padding-bottom: 10px;
-    border-bottom: 2px solid var(--excel-light-blue);
-    color: var(--excel-blue);
+    border-bottom: 2px solid var(--brand-surface-light);
+    color: var(--brand-primary);
 }
 
 .form-section-header i {
@@ -681,7 +678,7 @@ body.menu-open .menu-overlay {
     gap: 10px;
     width: 100%;
     padding: 14px;
-    background: var(--excel-blue);
+    background: var(--brand-primary);
     color: white;
     border: none;
     border-radius: 6px;
@@ -868,7 +865,7 @@ body.menu-open .menu-overlay {
 .user-avatar-placeholder {
     width: 60px;
     height: 60px;
-    background: var(--excel-blue);
+    background: var(--brand-primary);
     color: white;
     display: flex;
     align-items: center;
@@ -958,7 +955,7 @@ body.menu-open .menu-overlay {
     top: 5px;
     width: 12px;
     height: 12px;
-    background: var(--excel-blue);
+    background: var(--brand-primary);
     border: 2px solid white;
     border-radius: 50%;
     z-index: 1;
@@ -968,7 +965,7 @@ body.menu-open .menu-overlay {
     background: #f8fafc;
     padding: 15px;
     border-radius: 8px;
-    border-left: 4px solid var(--excel-blue);
+    border-left: 4px solid var(--brand-primary);
 }
 
 .timeline-time {
