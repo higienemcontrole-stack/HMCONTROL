@@ -461,9 +461,7 @@ async def update_user_profile(data: dict):
         # 1. Se houver nova senha, atualizar no db Auth
         new_password = data.get("password")
         if new_password:
-            auth_admin.db_admin.auth.admin.update_user_by_id(
-                user_id, {"password": new_password}
-            )
+            auth_admin.update_user_by_id(user_id, {"password": new_password})
 
         # 2. Atualizar ou Inserir na tabela de Perfis (Upsert)
         profile_data = {
