@@ -48,6 +48,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/api/health")
+async def health():
+    return {"status": "ok", "version": "4.1.0"}
+
+@app.get("/api/status")
+async def status():
+    db_ok = False
+    db_url_present = bool(DB_URL)
+    service_key_present = bool(SERVICE_KEY)
+    public_key_present = bool(PUBLIC_KEY)
+    try:
+        # Testa conexão real com o banco
+        test = db.table("perfis").select("id").limit(1).execute()
+        db_ok = True
+    except Exception as e:
+        db_ok = False
+    return {
+        "db_connected": db_ok,
+        "db_url_present": db_url_present,
+        "service_key_present": service_key_present,
+        "public_key_present": public_key_present,
+        "env_vars_ok": db_url_present and (service_key_present or public_key_present)
+    }
+
 # --- CACHE DE DADOS db ---
 GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
 
