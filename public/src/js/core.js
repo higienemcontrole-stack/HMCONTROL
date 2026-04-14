@@ -706,6 +706,17 @@ class Core {
         localStorage.clear();
         window.location.href = 'login.html';
     }
+
+    toggleUserMenu(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        const dropdown = document.getElementById('user-dropdown');
+        if (dropdown) {
+            dropdown.classList.toggle('active');
+        }
+    }
 }
 
 window.HM = new Core();
