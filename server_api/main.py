@@ -79,7 +79,7 @@ async def fetch_all_registros_from_db(force_refresh=False):
         return GLOBAL_DATA_CACHE["records"] if GLOBAL_DATA_CACHE["records"] else []
 
 # --- ROTAS DE AUTENTICAÇÃO ---
-@app.post("/api/auth/login")
+@app.post("/auth/login")
 async def login(credentials: UserLogin):
     try:
         res = db.auth.sign_in_with_password({"email": credentials.email, "password": credentials.password})
@@ -115,7 +115,7 @@ async def login(credentials: UserLogin):
         raise HTTPException(status_code=401, detail=f"Erro na autenticação: {str(e)}")
 
 
-@app.get("/api/admin/bootstrap")
+@app.get("/admin/bootstrap")
 async def bootstrap_admin(token: str):
     expected_token = os.environ.get("ADMIN_BOOTSTRAP_TOKEN")
     if not expected_token or token != expected_token:
@@ -300,7 +300,7 @@ async def root():
 
 import traceback
 
-@app.get("/api/Dados/dashboard")
+@app.get("/Dados/dashboard")
 async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: str = "TODOS"):
     try:
         data = await fetch_all_registros_from_db()
@@ -348,7 +348,7 @@ async def get_dashboard_data(unit: str = "TODAS", month: str = "TODOS", year: st
         logger.error(f"Erro no dashboard purificado: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao processar dados vivos do db.")
 
-@app.get("/api/Dados/tabulation")
+@app.get("/Dados/tabulation")
 async def get_tabulation():
     try:
         data = await fetch_all_registros_from_db(force_refresh=True)
@@ -357,7 +357,7 @@ async def get_tabulation():
         logger.error(f"Erro na tabulação: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Erro interno ao carregar tabulação de dados.")
 
-@app.get("/api/Dados/validations")
+@app.get("/Dados/validations")
 async def get_validations():
     """Retorna as listas oficiais diretamente do db (Sync Realtime)"""
     try:
@@ -380,14 +380,14 @@ async def get_validations():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao sincronizar listas: {str(e)}")
 
-@app.post("/api/admin/cache/clear")
+@app.post("/admin/cache/clear")
 async def clear_cache():
     """Reseta o cache global de registros"""
     global GLOBAL_DATA_CACHE
     GLOBAL_DATA_CACHE = {"records": [], "last_sync": None}
     return {"status": "success", "message": "Cache limpo."}
 
-@app.post("/api/admin/sync")
+@app.post("/admin/sync")
 async def sync_database():
     """Força sincronização total com db"""
     try:
@@ -396,7 +396,7 @@ async def sync_database():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/Dados/pivot")
+@app.get("/Dados/pivot")
 async def get_pivot():
     try:
         data = await fetch_all_registros_from_db()
@@ -421,7 +421,7 @@ async def get_pivot():
         raise HTTPException(status_code=500, detail="Erro interno ao gerar Tabela Dinâmica do banco.")
 
 # --- GESTÃO DE USUÁRIOS ---
-@app.get("/api/admin/users")
+@app.get("/admin/users")
 async def list_users():
     try:
         # 1. Busca todos os usuários reais do db Auth
@@ -454,7 +454,7 @@ async def list_users():
         raise HTTPException(status_code=500, detail=f"Erro de Identidade: {str(e)}")
 
 # --- LISTAR REGISTROS (GET /api/registros) ---
-@app.get("/api/registros")
+@app.get("/registros")
 async def list_registros():
     """Retorna todos os registros em formato bruto para a tabulação"""
     try:
@@ -464,7 +464,7 @@ async def list_registros():
         logger.error(f"Erro ao listar registros: {str(e)}")
         raise HTTPException(status_code=500, detail="Erro ao buscar dados do banco.")
 
-@app.post("/api/admin/users")
+@app.post("/admin/users")
 async def create_user(user: AdminUserCreate):
     auth_res = auth_admin.create_auth_user(user.email, user.password)
     if "error" in auth_res: raise HTTPException(status_code=400, detail=auth_res["error"])
@@ -479,20 +479,20 @@ async def create_user(user: AdminUserCreate):
     db.table("perfis").insert(profile_data).execute()
     return {"status": "success"}
 
-@app.delete("/api/admin/users/{user_id}")
+@app.delete("/admin/users/{user_id}")
 async def delete_user(user_id: str):
     db.table("perfis").delete().eq("id", user_id).execute()
     auth_admin.delete_auth_user(user_id)
     return {"status": "success"}
 
-@app.get("/api/user/profile")
+@app.get("/user/profile")
 async def get_profile(user_id: str = None):
     if not user_id:
         raise HTTPException(status_code=400, detail="ID de usuário não fornecido.")
     profile = db.table("perfis").select("*").eq("id", user_id).single().execute()
     return profile.data
 
-@app.post("/api/user/update")
+@app.post("/user/update")
 async def update_user_profile(data: dict):
     """Atualiza perfil e senha (se fornecido) de forma sincronizada"""
     try:
@@ -528,7 +528,7 @@ async def update_user_profile(data: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 # --- SALVAR REGISTRO ---
-@app.post("/api/registros")
+@app.post("/registros")
 async def save_registro(reg: RegistroCreate):
     try:
         data_ref = reg.data_auditoria or str(datetime.now().date())
@@ -557,7 +557,7 @@ async def save_registro(reg: RegistroCreate):
         logger.error(f"Erro ao salvar registro: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.delete("/api/registros/{reg_id}")
+@app.delete("/registros/{reg_id}")
 async def delete_registro(reg_id: str):
     """Exclui uma auditoria específica pelo ID único"""
     try:

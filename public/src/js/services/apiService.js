@@ -17,6 +17,45 @@ const CONFIG = {
 };
 
 const apiService = {
+    checkAuth() {
+        const isLoginPage = window.location.pathname.includes('login.html');
+        const isAuthenticated = localStorage.getItem('hm_token');
+
+        if (!isAuthenticated && !isLoginPage) {
+            console.log('[Core] Sessão ausente. Redirecionando.');
+            this.logout();
+            return false;
+        }
+        return true;
+    },
+
+    logout() {
+        localStorage.clear();
+        if (!window.location.pathname.includes('login.html')) {
+            window.location.href = 'login.html';
+        }
+    },
+
+    async _fetch(url, options = {}) {
+        this.checkAuth();
+        const token = localStorage.getItem('hm_token');
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...options.headers
+        };
+
+        const response = await fetch(url, { ...options, headers });
+        
+        if (response.status === 401 || response.status === 403) {
+            console.warn('[API] Sessão expirada ou negada.');
+            this.logout();
+            throw new Error('Não autorizado');
+        }
+
+        return response;
+    },
+
     async login(email, password) {
         const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.LOGIN}`, {
             method: 'POST',
@@ -27,84 +66,25 @@ const apiService = {
         return response.json();
     },
 
-    async saveRegistro(payload) {
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.REGISTROS}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        return response.json();
-    },
-
-    async getStats() {
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.STATS}`);
-        return response.json();
+    async getDashboard(unit, month, year) {
+        const url = `${CONFIG.API_URL}${CONFIG.ENDPOINTS.DASHBOARD}?unit=${unit}&month=${month}&year=${year}`;
+        const res = await this._fetch(url);
+        return res.json();
     },
 
     async getValidations() {
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.VALIDATIONS}`);
-        return response.json();
+        const res = await this._fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.VALIDATIONS}`);
+        return res.json();
+    },
+
+    async getTabulation() {
+        const res = await this._fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.TABULATION || '/api/Dados/tabulation'}`);
+        return res.json();
     },
 
     async getAdminUsers() {
-        const token = localStorage.getItem('hm_token');
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_USERS}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return response.json();
-    },
-
-    async createAdminUser(payload) {
-        const token = localStorage.getItem('hm_token');
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_USERS}`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
-        return response.json();
-    },
-
-    async deleteAdminUser(userId) {
-        const token = localStorage.getItem('hm_token');
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_USERS}/${userId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return response.json();
-    },
-
-    async resetAdminPassword(userId, newPassword) {
-        const token = localStorage.getItem('hm_token');
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_RESET_PW}`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ user_id: userId, new_password: newPassword })
-        });
-        return response.json();
-    },
-
-    async clearCache() {
-        const token = localStorage.getItem('hm_token');
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_CACHE}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return response.json();
-    },
-
-    async syncDatabase() {
-        const token = localStorage.getItem('hm_token');
-        const response = await fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_SYNC}`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        return response.json();
+        const res = await this._fetch(`${CONFIG.API_URL}${CONFIG.ENDPOINTS.ADMIN_USERS}`);
+        return res.json();
     }
 };
 
